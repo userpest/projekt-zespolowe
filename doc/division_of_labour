@@ -1,0 +1,13 @@
+uzyszkodnik: 
+	-engine
+
+Mad Fuko:
+	-networking
+	-UI
+
+things that would balance workload (things that will be dynamically asigned to balance workload of each project member,may not be assigned at all):
+
+-bot ai
+-game modes (ctf, deathmatch etc)
+-campaign
+-redesign of the map format
