@@ -29,7 +29,9 @@ class GameMap:
 class Board:
 	def __init__(self,game_map):
 		self.game_map = game_map
-		self.objects =  [] 
+		self.players =  [] 
+		self.projectiles = []
+		self.objects = [] 
 
 	def epoch(self,):
 		"""call me every frame"""
@@ -38,15 +40,21 @@ class Board:
 		self._handleMovement()
 
 
-	def register(self, obj):
-		"""registers and object in the engine"""
+	def registerPlayer(self, obj):
+		self.players.append(obj)
 		self.objects.append(obj)
-		pass
 
-	def unregister(self, obj):
-		"""unregisters an object from the engine """
+	def unregisterPlayer(self,obj)
+		self.players.remove(obj)
 		self.objects.remove(obj)
-		pass
+
+	def registerProjectile(self,obj):
+		self.projectiles.append(obj)
+		self.objects.append(obj)
+
+	def unregisterProjectile(self, obj):
+		self.projectiles.remove(obj)
+		self.objects.remove(obj)
 
 
 	#TODO: OPTIMIZE
@@ -58,17 +66,74 @@ class Board:
 
 
 	def _handleTerrainCollisions(self):
-		for i in self.objects:
+		for i in self.projectiles:
 			if self._terrainCollision(i):
-				if i.handleTerrainImpact():
-					self.game_map.processProjectile(i)	
-				else:
-					#bounce/ calculate impact on movement
-					pass
+				self.game_map.processProjectile(i)	
+				i.handleTerrainImpact():
 
 
-	def _handleMovement():
-		pass
+	def _handleMovement(self):
+
+		self._handlePlayerMovement()
+		self._handleProjectileMovement()
+
+	def _handleProjectileMovement(self):
+
+		for i in self.projectiles:
+			r = i.sprite.rect
+			r.x +=v.x
+			r.y += v.y
+
+	def _handlePlayerMovement(self):
+		for i in self.players:
+			i.handleForce()
+			#apply gravity TODO: ugly
+			i.v.y-=10
+			pixelx = i.sprite.rect.centerx
+			pixely = i.sprite.rect.bottom
+			movex = int(i.v.x)
+			movey = int(i.v.y)
+
+			mcm = self.game_map.collision_map
+
+			while( movex != 0 or movey != 0 ):
+
+				if movex > 0 
+					if mcm[pixelx+1][pixely] == 0:
+						pixelx+=1
+						movex-=1
+					else if mcm[pixelx+1][pixely+1] == 0 and movex>=2:
+						movex-=2
+						pixelx+=1
+						pixely+=1
+					else:
+						movex=0
+
+				if movex < 0:
+					if mcm[pixelx+1][pixely] == 0:
+						pixelx-=1
+						movex+=1
+					else if mcm[pixelx+1][pixely+1] == 0 and movex<=-2:
+						movex-=2
+						pixelx-=1
+						pixely+=1
+					else:
+						movex=0
+
+				if movey > 0:
+					if mcm[pixelx][pixely+1] ==0 :
+						pixely+=1
+						movey-=1
+					else:
+						movey = 0 
+
+				if mcm[pixelx][pixely-1] == 0 :
+						pixely-=1
+						movey+=1
+					else:
+						movey = 0 
+
+
 
 	def _objectsCollide(self,obj1, obj2):
 
@@ -127,39 +192,42 @@ class BoardObject:
 
 		self.collisions = []
 
-		"""docstring for __init__"""
 
-		pass
 
 	def emit(self):
-		"""docstring for emit"""
+		"""emit some objects like bullets grenades w/e"""
 		pass
 
 	def handleObjectImpact(self):
-	 	"""docstring for fname"""
-	 	pass
+	 	"""return something youd like to pass to the other object, like the harm you do to it"""
+		return None
 
 	def handleTerrainImpact(self):
 		""" return True to harm some terrain """
 		return False
 
 	def setVelocity(self,velocity):
-		""" """
+		"""self explanatory """
 		pass
 
 	def applyForce(self,v):
-		"""docstring for applyForce"""
+		"""self explanatory"""
 		self.force+=v
 		pass
 
 	def handleForce(self):
 		self.v = self.force/self.mass
 
-	def epoch():
+	def movable(self):
+		"""if you dont want your object to be moved return False"""
+		return True
+
+	def epoch(self):
 		""" stuff you would like to do in the game epoch, stuff like dying to bullets or creating a harmfull explosion """
 		pass
+
 	def addCollision(self,obj):
-		self.collisions.append(i)
+		pass
 
 
 class Player(BoardObject):
