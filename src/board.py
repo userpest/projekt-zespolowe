@@ -109,6 +109,7 @@ class Board:
 						pixely+=1
 					else:
 						movex=0
+						i.v.x=0 
 
 				if movex < 0:
 					if mcm[pixelx+1][pixely] == 0:
@@ -120,6 +121,7 @@ class Board:
 						pixely+=1
 					else:
 						movex=0
+						i.v.x = 0 
 
 				if movey > 0:
 					if mcm[pixelx][pixely+1] ==0 :
@@ -127,13 +129,14 @@ class Board:
 						movey-=1
 					else:
 						movey = 0 
+						i.v.y = 0
 
 				if mcm[pixelx][pixely-1] == 0 :
 						pixely-=1
 						movey+=1
 					else:
 						movey = 0 
-
+						i.v.y = 0 
 
 
 	def _objectsCollide(self,obj1, obj2):
@@ -209,12 +212,11 @@ class BoardObject:
 
 	def setVelocity(self,velocity):
 		"""self explanatory """
-		pass
+		self.v = velocity
 
 	def applyForce(self,v):
 		"""self explanatory"""
 		self.force+=v
-		pass
 
 	def handleForce(self):
 		self.v = self.force/self.mass
@@ -237,7 +239,6 @@ class Player(BoardObject):
 		self.x=x
 		self.y=y
 		self.angle=angle
-		pass
 
 	def setAngle(self,angle):
 		"""sets the weapon angle"""
