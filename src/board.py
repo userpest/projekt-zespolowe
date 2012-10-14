@@ -19,6 +19,7 @@ class GameMap:
 	def processProjectile(self, obj):
 		#TODO: optimize - this function should modify the collision map only in the place of impact
 		self.game_map.blit(obj.img,obj.img.rect)		
+		self.changed = True
 
 	def epoch(self):	
 		#TODO: see processProjectile
