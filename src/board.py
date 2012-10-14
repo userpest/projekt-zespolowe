@@ -1,18 +1,30 @@
 #!/usr/bin/python
 import os 
-import pygame
+from pygame import *
 from vector2d import *
 
 
 class GameMap:
 	def __init__(self,name):
 		self.load(name)
+
 	def load(self,name):
 		mapname = os.path.join('maps',name)
-		self.game_map = pygame.image.load(mapname)
-		pass
-	def processProjectile(self):
-		pass
+		self.game_map = image.load(mapname).convert()
+		self.game_map.x = 0 
+		self.game_map.y = 0 
+		self.collision_map = surfarray.array_colorkey(game_map)
+		self.changed = False
+
+	def processProjectile(self, obj):
+		#TODO: optimize - this function should modify the collision map only in the place of impact
+		self.game_map.blit(obj.img,obj.img.rect)		
+
+	def epoch(self):	
+		#TODO: see processProjectile
+		if self.changed:
+			self.collision_map = surfarray.array_colorkey(game_map)
+			self.changed = False
 
 class Board:
 	def __init__(self,game_map):
@@ -41,76 +53,82 @@ class Board:
 	def _handleObjectCollisions(self):
 		for i in self.objects:
 			for j in self.objects:
-				if self._rectsCollison(i,j) and self._colMapCollision(i,j):
-					pass
+				if self._objectsCollide(i,j):
+					i.addCollison(j)
 
 
 	def _handleTerrainCollisions(self):
 		for i in self.objects:
 			if self._terrainCollision(i):
-				if i._handleTerrainImpact():
-					pass
+				if i.handleTerrainImpact():
+					self.game_map.processProjectile(i)	
 				else:
+					#bounce/ calculate impact on movement
 					pass
 
 
 	def _handleMovement():
 		pass
 
-	def _rectsCollison(self,obj1, obj2):
-		if (obj1.collision_map.get_width() + obj1.x < obj2.x 
-			or
-		    obj1.x > obj2.collision_map.get_width() + obj2.x  
-			or 
-	       	    obj1.collision_map.get_height()+obj1.y < obj2.y 
-		   	or 
-		    obj1.y > obj2.collision_map.get_height() + obj2.y ):
+	def _objectsCollide(self,obj1, obj2):
 
-			return False
+		r1 = obj1.sprite.rect
+		r2 = obj2.sprite.rect
 
-		return True
-	#TODO optimize
-	def _colMapCollision(self,obj1,obj2):
-		#calculate the overlap coords of the rectangles
+		overlap = r1.clip(r2)
 
-		if obj1.collision_map.get_width()+obj1.x > obj2.x:
-			collision_start_x = obj2.x
-			collision_end_x = obj1.collision_map.get_width()+obj1.x
-		else:
-			collision_start_x = obj1.x
-			collision_end_x = obj2.collision_map.get_width()+obj2.x
+		cm1 = obj1.img.collision_map
+		cm2 = obj2.img.collision_map
 
-		if obj1.collision_map.get_height()+obj1.y > obj2.y:
-			collision_start_y = obj2.y
-			collision_end_y = obj1.collision_map.get_height()+obj1.y
-		else:
-			collision_start_y = obj1.y
-			collision_end_y = obj2.collision_map.get_height()+obj2.y
+		x1 = r1.x-overlap.x	
+		y1 = r1.y - overlap.y
 
-		for i in range(
+		x2 = r2.x-overlap.x 
+		y2 = r2.y - overlap.y
 
+		for y in range(0,overlap.height):
+			for x in range(0,overlap.width):
+				if cm1[x+x1][y+y1] & cm2[x+x2][y+y2]:
+					return True
+
+		return False
 
 	def _terrainCollision(self,obj1):
-		pass
+		r = obj1.rect
+		mcm = self.game_map.collision_map
+		cm = obj1.collision_map
+
+		for y in range(0, r.height):
+			for x in range(0,r.width):
+				if mcm[r.x+x][r.y+y] & cm[x][y]:
+					return True
+
+		return False
 
 
 
 
 class BoardObject:
 
-	def __init__(self,x=None,y=None,v=Vector2D(),collision_map=None,mass=1):
-		self.obj_id=0
+	def __init__(self,x=None,y=None,img=None, mass=1,v=Vector2D()):
+
 		self.v = v
 		self.mass=mass
-		self.x = x
-		self.y = y
-		self.force = Vector2D() 
-		self.collision_map = collision_map
-		"""docstring for __init__"""
-		pass
+		self.sprite = sprite.Sprite()
 
-	def show(self):
-		"""docstring for show"""
+		self.sprite.image = img
+		self.sprite.rect = img.get_rect()
+
+		self.sprite.rect.x=x
+		self.sprite.rect.y=y
+
+		self.force = Vector2D() 
+		self.collision_map = surfarray.array_colorkey(collision_map)
+
+		self.collisions = []
+
+		"""docstring for __init__"""
+
 		pass
 
 	def emit(self):
@@ -122,8 +140,8 @@ class BoardObject:
 	 	pass
 
 	def handleTerrainImpact(self):
-		""" """
-		pass
+		""" return True to harm some terrain """
+		return False
 
 	def setVelocity(self,velocity):
 		""" """
@@ -134,8 +152,14 @@ class BoardObject:
 		self.force+=v
 		pass
 
+	def handleForce(self):
+		self.v = self.force/self.mass
+
 	def epoch():
-		self.v
+		""" stuff you would like to do in the game epoch, stuff like dying to bullets or creating a harmfull explosion """
+		pass
+	def addCollision(self,obj):
+		self.collisions.append(i)
 
 
 class Player(BoardObject):
