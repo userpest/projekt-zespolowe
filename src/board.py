@@ -10,6 +10,7 @@ class GameMap:
 	def load(self,name):
 		mapname = os.path.join('maps',name)
 		self.game_map = image.load(mapname).convert()
+		self.game_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(self.game_map)
 		self.changed = False
 
@@ -43,6 +44,7 @@ class Board:
 		self.players =  [] 
 		self.projectiles = []
 		self.objects = [] 
+		self.gravity = Vector2D(x=0,y=10)
 
 	def epoch(self,):
 		"""call me every frame"""
@@ -109,8 +111,7 @@ class Board:
 	def _handlePlayerMovement(self):
 		for i in self.players:
 			i.handleForce()
-			#apply gravity TODO: ugly
-			i.v.y-=10
+			i.v+=self.gravity
 			pixelx = i.rect.centerx
 			pixely = i.rect.bottom
 			movex = int(i.v.x)
@@ -162,6 +163,9 @@ class Board:
 						i.v.y = 0 
 						i.handleTerrainImpact()
 
+				
+			i.rect.centerx = pixelx 
+			i.rect.bottom = pixely  
 
 	def _objectsCollide(self,obj1, obj2):
 
@@ -220,6 +224,7 @@ class BoardObject:
 		tmprect.x = self.rect.x
 		tmprect.y = self.rect.y
 		self.rect = tmprect
+		collision_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(collision_map)
 		
 
@@ -237,14 +242,16 @@ class BoardObject:
 		self.v = velocity
 
 	def applyVelocity(self,velocity):
-		self.v +=v
+		self.v +=velocity
 
-	def applyForce(self,v):
+	def applyForce(self,f):
 		"""self explanatory"""
-		self.force+=v
+		self.force+=f
 
 	def handleForce(self):
-		self.v = self.force/self.mass
+		self.v += self.force/self.mass
+		self.force.x=0
+		self.force.y=0
 
 	def movable(self):
 		"""if you dont want your object to be moved return False"""

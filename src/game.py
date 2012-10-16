@@ -5,17 +5,18 @@ from player import *
 from board import *
 
 
-screen = pygame.display.set_mode((468, 60))
+screen = pygame.display.set_mode((800, 600))
 
-plyr = Player(0,0,0,"hero.png", "hero.png")
-gm = GameMap("map.jpg")
+plr = Player(0,0,0,"hero.png", "hero.png")
+gm = GameMap("map.png")
 engine = Board(gm)
+engine.registerPlayer(plr)
 
 while 1:
 	engine.epoch()
-	engine.registerPlayer(plyr)
+
 	gm.show(screen)	
-	plyr.show(screen)
+	plr.show(screen)
 	pygame.display.flip()
 
 	pygame.time.wait(50)

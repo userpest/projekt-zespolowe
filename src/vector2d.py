@@ -36,19 +36,22 @@ class Vector2D:
 	def __iadd__(self,other):
 		self.x+=other.x
 		self.y+=other.y
+		return self
 
 	def __isub__(self,other):
 		self.x-=other.x
 		self.y-=other.y
+		return self
 
 	def __imul__(self,other):
 		self.x*=other
 		self.y*=other
+		return self
 
 	def __idiv__(self,other):
 		self.x/=other
 		self.y/=other
-
+		return self
 	def __len__(self):
 		return math.sqrt(self.x*self.x+self.y*self.y)
 

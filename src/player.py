@@ -21,6 +21,7 @@ class Player(BoardObject):
 
 	def handleTerrainImpact(self):
 		self.ground = True
+		print "terrain impact"
 		return False
 
 	def setAngle(self,angle):
