@@ -3,7 +3,6 @@ import os
 from pygame import *
 from vector2d import *
 
-
 class GameMap:
 	def __init__(self,name):
 		self.load(name)
@@ -19,27 +18,49 @@ class GameMap:
 	def processProjectile(self, obj):
 		#TODO: optimize - this function should modify the collision map only in the place of impact
 		self.game_map.blit(obj.img,obj.img.rect)		
-		self.changed = True
+
+		r = obj.rect
+		mcm = self.collision_map
+		cm = obj.collision_map
+
+		for y in range(0, r.height):
+			for x in range(0,r.width):
+				if mcm[r.x+x][r.y+y] & cm[x][y]:
+					mcm[r.x+x][r.y+y]=0
+		
+	#	self.changed = True
 
 	def epoch(self):	
 		#TODO: see processProjectile
-		if self.changed:
-			self.collision_map = surfarray.array_colorkey(game_map)
-			self.changed = False
+	#	if self.changed:
+	#		self.collision_map = surfarray.array_colorkey(game_map)
+	#		self.changed = False
 
 class Board:
-	def __init__(self,game_map):
+	def __init__(self,game_map,screen):
 		self.game_map = game_map
 		self.players =  [] 
 		self.projectiles = []
 		self.objects = [] 
+		self.screen =  screen
 
 	def epoch(self,):
 		"""call me every frame"""
+
 		self._handleObjectCollisions()
 		self._handleTerrainCollisions()
 		self._handleMovement()
 
+		for i in self.projectiles:
+			i.epoch()
+			if i.unregister():
+				self.unregisterProjectile(i)
+
+		for i in self.players:
+			i.epoch()
+
+			if i.unregister():
+				self.unregisterPlayer(i)
 
 	def registerPlayer(self, obj):
 		self.players.append(obj)
@@ -68,7 +89,7 @@ class Board:
 
 	def _handleTerrainCollisions(self):
 		for i in self.projectiles:
-			if self._terrainCollision(i):
+			if i.movable() and self._terrainCollision(i):
 				self.game_map.processProjectile(i)	
 				i.handleTerrainImpact():
 
@@ -90,8 +111,8 @@ class Board:
 			i.handleForce()
 			#apply gravity TODO: ugly
 			i.v.y-=10
-			pixelx = i.sprite.rect.centerx
-			pixely = i.sprite.rect.bottom
+			pixelx = i.rect.centerx
+			pixely = i.rect.bottom
 			movex = int(i.v.x)
 			movey = int(i.v.y)
 
@@ -141,8 +162,8 @@ class Board:
 
 	def _objectsCollide(self,obj1, obj2):
 
-		r1 = obj1.sprite.rect
-		r2 = obj2.sprite.rect
+		r1 = obj1.rect
+		r2 = obj2.rect
 
 		overlap = r1.clip(r2)
 
@@ -179,36 +200,34 @@ class Board:
 
 class BoardObject:
 
-	def __init__(self,x=None,y=None,img=None, mass=1,v=Vector2D()):
+	def __init__(self,x=0,y=0,collision_map, mass=1,v=Vector2D()):
 
 		self.v = v
 		self.mass=mass
-		self.sprite = sprite.Sprite()
 
-		self.sprite.image = img
-		self.sprite.rect = img.get_rect()
+		self.rect = Rect(x,y,666,666)
 
-		self.sprite.rect.x=x
-		self.sprite.rect.y=y
+		self.setCollisionMap(collision_map)
 
 		self.force = Vector2D() 
+
+	def setCollisionMap(self, collision_map):
+
+		tmprect = collision_map.get_rect()
+		tmprect.x = self.rect.x
+		tmprect.y = self.rect.y
+		self.rect = tmprect
 		self.collision_map = surfarray.array_colorkey(collision_map)
-
-		self.collisions = []
-
-
-
-	def emit(self):
-		"""emit some objects like bullets grenades w/e"""
-		pass
+		
 
 	def handleObjectImpact(self):
-	 	"""return something youd like to pass to the other object, like the harm you do to it"""
+	 	"""return something youd like to pass to the other object, 
+		like the harm you do to it"""
 		return None
 
-	def handleTerrainImpact(self):
-		""" return True to harm some terrain """
-		return False
+#	def handleTerrainImpact(self):
+#		""" return True to harm some terrain """
+#		return False
 
 	def setVelocity(self,velocity):
 		"""self explanatory """
@@ -226,11 +245,16 @@ class BoardObject:
 		return True
 
 	def epoch(self):
-		""" stuff you would like to do in the game epoch, stuff like dying to bullets or creating a harmfull explosion """
+		""" stuff you would like to do in the game epoch,
+		stuff like dying to bullets or creating a harmful explosion """
 		pass
 
 	def addCollision(self,obj):
 		pass
+
+	def unregister(self):
+		"""return true if you want to unregister from engine"""
+		return False
 
 
 class Player(BoardObject):
