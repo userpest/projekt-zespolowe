@@ -10,9 +10,7 @@ class GameMap:
 	def load(self,name):
 		mapname = os.path.join('maps',name)
 		self.game_map = image.load(mapname).convert()
-		self.game_map.x = 0 
-		self.game_map.y = 0 
-		self.collision_map = surfarray.array_colorkey(game_map)
+		self.collision_map = surfarray.array_colorkey(self.game_map)
 		self.changed = False
 
 	def processProjectile(self, obj):
@@ -35,14 +33,16 @@ class GameMap:
 	#	if self.changed:
 	#		self.collision_map = surfarray.array_colorkey(game_map)
 	#		self.changed = False
+		pass
+	def show(self,screen):
+		screen.blit(self.game_map,(0,0))
 
 class Board:
-	def __init__(self,game_map,screen):
+	def __init__(self,game_map):
 		self.game_map = game_map
 		self.players =  [] 
 		self.projectiles = []
 		self.objects = [] 
-		self.screen =  screen
 
 	def epoch(self,):
 		"""call me every frame"""
@@ -66,7 +66,7 @@ class Board:
 		self.players.append(obj)
 		self.objects.append(obj)
 
-	def unregisterPlayer(self,obj)
+	def unregisterPlayer(self,obj):
 		self.players.remove(obj)
 		self.objects.remove(obj)
 
@@ -84,14 +84,14 @@ class Board:
 		for i in self.objects:
 			for j in self.objects:
 				if self._objectsCollide(i,j):
-					i.addCollison(j)
+					i.addCollision(j)
 
 
 	def _handleTerrainCollisions(self):
 		for i in self.projectiles:
 			if i.movable() and self._terrainCollision(i):
 				self.game_map.processProjectile(i)	
-				i.handleTerrainImpact():
+				i.handleTerrainImpact()
 
 
 	def _handleMovement(self):
@@ -120,11 +120,11 @@ class Board:
 
 			while( movex != 0 or movey != 0 ):
 
-				if movex > 0 
+				if movex > 0:
 					if mcm[pixelx+1][pixely] == 0:
 						pixelx+=1
 						movex-=1
-					else if mcm[pixelx+1][pixely+1] == 0 and movex>=2:
+					elif mcm[pixelx+1][pixely+1] == 0 and movex>=2:
 						movex-=2
 						pixelx+=1
 						pixely+=1
@@ -136,7 +136,7 @@ class Board:
 					if mcm[pixelx+1][pixely] == 0:
 						pixelx-=1
 						movex+=1
-					else if mcm[pixelx+1][pixely+1] == 0 and movex<=-2:
+					elif mcm[pixelx+1][pixely+1] == 0 and movex<=-2:
 						movex-=2
 						pixelx-=1
 						pixely+=1
@@ -151,13 +151,16 @@ class Board:
 					else:
 						movey = 0 
 						i.v.y = 0
+						i.handleTerrainImpact()
 
-				if mcm[pixelx][pixely-1] == 0 :
+				if movey < 0 :
+					if mcm[pixelx][pixely-1] == 0 :
 						pixely-=1
 						movey+=1
 					else:
 						movey = 0 
 						i.v.y = 0 
+						i.handleTerrainImpact()
 
 
 	def _objectsCollide(self,obj1, obj2):
@@ -167,8 +170,8 @@ class Board:
 
 		overlap = r1.clip(r2)
 
-		cm1 = obj1.img.collision_map
-		cm2 = obj2.img.collision_map
+		cm1 = obj1.collision_map
+		cm2 = obj2.collision_map
 
 		x1 = r1.x-overlap.x	
 		y1 = r1.y - overlap.y
@@ -200,7 +203,7 @@ class Board:
 
 class BoardObject:
 
-	def __init__(self,x=0,y=0,collision_map, mass=1,v=Vector2D()):
+	def __init__(self,x,y,collision_map, mass=1,v=Vector2D()):
 
 		self.v = v
 		self.mass=mass
@@ -225,13 +228,16 @@ class BoardObject:
 		like the harm you do to it"""
 		return None
 
-#	def handleTerrainImpact(self):
-#		""" return True to harm some terrain """
-#		return False
+	def handleTerrainImpact(self):
+		""" callback on terrain impact"""
+		return
 
 	def setVelocity(self,velocity):
 		"""self explanatory """
 		self.v = velocity
+
+	def applyVelocity(self,velocity):
+		self.v +=v
 
 	def applyForce(self,v):
 		"""self explanatory"""
@@ -247,39 +253,12 @@ class BoardObject:
 	def epoch(self):
 		""" stuff you would like to do in the game epoch,
 		stuff like dying to bullets or creating a harmful explosion """
-		pass
+		return
 
 	def addCollision(self,obj):
-		pass
+		return
 
 	def unregister(self):
 		"""return true if you want to unregister from engine"""
 		return False
-
-
-class Player(BoardObject):
-
-	def __init__(self,x=0,y=0,angle=0):
-		self.x=x
-		self.y=y
-		self.angle=angle
-
-	def setAngle(self,angle):
-		"""sets the weapon angle"""
-		pass
-
-	def jump(self):
-		pass
-
-	def moveLeft(self):
-		"""moves the character left"""
-		pass
-
-	def moveRight(self):
-		"""moves the character right"""
-		pass
-
-	def jets(self):
-		"""fires the jets"""
-		pass
 

@@ -6,7 +6,6 @@ class Vector2D:
 	def __init__(self,lenght=0, angle=0,x=0,y=0):
 
 		if lenght == 0 and angle == 0:
-			print "by coords"
 			self.x=x
 			self.y=y
 		else:
