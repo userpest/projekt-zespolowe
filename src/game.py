@@ -13,10 +13,15 @@ engine = Board(gm)
 engine.registerPlayer(plr)
 
 while 1:
+	for event in event.get():
+
+			
 	engine.epoch()
+
 
 	gm.show(screen)	
 	plr.show(screen)
+
 	pygame.display.flip()
 
 	pygame.time.wait(50)

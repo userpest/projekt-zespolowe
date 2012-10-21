@@ -12,6 +12,7 @@ class GameMap:
 		self.game_map = image.load(mapname).convert()
 		self.game_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(self.game_map)
+		self.game_map.set_colorkey(None)
 		self.changed = False
 
 	def processProjectile(self, obj):
@@ -114,8 +115,10 @@ class Board:
 			i.v+=self.gravity
 			pixelx = i.rect.centerx
 			pixely = i.rect.bottom
-			movex = int(i.v.x)
-			movey = int(i.v.y)
+			movex = i.v.x+i.v.forgottenx
+			movey = i.v.y+i.v.forgotteny
+			i.v.forgottenx=0
+			i.v.forgotteny=0
 
 			mcm = self.game_map.collision_map
 
@@ -130,6 +133,7 @@ class Board:
 						pixelx+=1
 						pixely+=1
 					else:
+						i.v.forgottenx+=movex
 						movex=0
 						i.v.x=0 
 
@@ -142,6 +146,7 @@ class Board:
 						pixelx-=1
 						pixely+=1
 					else:
+						i.v.forgottenx+=movex
 						movex=0
 						i.v.x = 0 
 
@@ -150,6 +155,7 @@ class Board:
 						pixely+=1
 						movey-=1
 					else:
+						i.v.forgotteny+=movey
 						movey = 0 
 						i.v.y = 0
 						i.handleTerrainImpact()
@@ -159,6 +165,7 @@ class Board:
 						pixely-=1
 						movey+=1
 					else:
+						i.v.forgotteny+=movey
 						movey = 0 
 						i.v.y = 0 
 						i.handleTerrainImpact()
@@ -210,6 +217,8 @@ class BoardObject:
 	def __init__(self,x,y,collision_map, mass=1,v=Vector2D()):
 
 		self.v = v
+		self.v.forgotteny=0
+		self.v.forgottenx=0
 		self.mass=mass
 
 		self.rect = Rect(x,y,666,666)

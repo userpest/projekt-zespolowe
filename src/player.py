@@ -31,6 +31,7 @@ class Player(BoardObject):
 	def jump(self):
 		if self.ground:
 			self.applyVelocity(self.jumpv)
+			self.ground = False
 
 	def moveLeft(self):
 		"""moves the character left"""
@@ -43,6 +44,7 @@ class Player(BoardObject):
 
 	def jets(self):
 		self.applyVelocity(self.jetv)
+		self.ground = False
 		"""fires the jets"""
 		pass
 	def show(self,screen):
