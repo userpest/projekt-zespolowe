@@ -54,14 +54,22 @@ class Board:
 		self._handleObjectCollisions()
 		self._handleTerrainCollisions()
 		self._handleMovement()
+		self._handleAttached()
 
 		for i in self.projectiles:
 			i.epoch()
+			for j in i.emit():
+				self._addEmittedProjectile(j,i)
+
+
 			if i.unregister():
 				self.unregisterProjectile(i)
 
 		for i in self.players:
 			i.epoch()
+
+			for j in i.emit():
+				self._addEmittedProjectile(j,i)
 
 			if i.unregister():
 				self.unregisterPlayer(i)
@@ -103,12 +111,29 @@ class Board:
 		self._handlePlayerMovement()
 		self._handleProjectileMovement()
 
+	def _handleAttached(self):
+		for i in self.objects:
+			for attachement in i.attached:
+				attachement.rect.x = i.rect.x + attachement.attach_x
+				attachement.rect.y = i.rect.y + attachement.attach_y
+				attachement.v = i.v
+				attachement.epoch()
+
+				for j in attachement.emit():
+					self._addEmittedProjectile(j,attachement)
+
 	def _handleProjectileMovement(self):
 
 		for i in self.projectiles:
 			r = i.sprite.rect
 			r.x +=v.x
 			r.y += v.y
+
+	def _addEmittedProjectile(self,projectile,parent):
+			projectile.v+=parent.v
+			projectile.x = parent.x
+			projectile.y = parent.y
+			self.registerProprojectileectile(projectile)
 
 	def _handlePlayerMovement(self):
 		for i in self.players:
@@ -191,6 +216,9 @@ class Board:
 
 	def _objectsCollide(self,obj1, obj2):
 
+		if not obj1.collides() or not obj2.collides():
+			return False
+
 		r1 = obj1.rect
 		r2 = obj2.rect
 
@@ -213,6 +241,10 @@ class Board:
 		return False
 
 	def _terrainCollision(self,obj1):
+
+		if not obj1.collides():
+			return False
+
 		r = obj1.rect
 		mcm = self.game_map.collision_map
 		cm = obj1.collision_map
@@ -226,21 +258,36 @@ class Board:
 
 
 
-
 class BoardObject:
+	def __init__(self,x,y,v):
+		self.rect=Rect(x,y,666,666)
+		self.v = v
+
+	def emit(self):
+		"""return a list of emitted projectiles"""
+		return []
+
+class AttachableObject(BoardObject):
+	def __init__(self,attach_x,attach_y):
+
+		BoardObject.__init__(0,0, Vector2D(0,0))
+		self.attach_x = attach_x
+		self.attach_y = attach_y
+
+class PhysicalObject(BoardObject):
 
 	def __init__(self,x,y,collision_map, mass=1,v=Vector2D()):
 
-		self.v = v
+		BoardObject.__init__(self,x,y,v)
 		self.v.forgotteny=0
 		self.v.forgottenx=0
 		self.mass=mass
 
-		self.rect = Rect(x,y,666,666)
 
 		self.setCollisionMap(collision_map)
 
-		self.force = Vector2D() 
+		self.v = Vector2D() 
+		self.attached = []
 
 	def setCollisionMap(self, collision_map):
 
@@ -251,7 +298,8 @@ class BoardObject:
 		collision_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(collision_map)
 		
-
+	def collides(self):
+		return True
 	def handleObjectImpact(self):
 	 	"""return something youd like to pass to the other object, 
 		like the harm you do to it"""
@@ -304,4 +352,10 @@ class BoardObject:
 	def unregister(self):
 		"""return true if you want to unregister from engine"""
 		return False
+
+	def attach(self,obj,x,y):
+		self.attached.append(obj)
+
+	def unattach(self,obj):
+		self.attached.remove(obj)
 
