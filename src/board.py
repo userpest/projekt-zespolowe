@@ -2,6 +2,7 @@
 import os 
 from pygame import *
 from vector2d import *
+import math
 
 class GameMap:
 	def __init__(self,name):
@@ -115,14 +116,23 @@ class Board:
 			i.v+=self.gravity
 			pixelx = i.rect.centerx
 			pixely = i.rect.bottom
-			movex = i.v.x+i.v.forgottenx
-			movey = i.v.y+i.v.forgotteny
-			i.v.forgottenx=0
-			i.v.forgotteny=0
+
+			mx=i.v.x+i.v.forgottenx
+			my=i.v.y+i.v.forgotteny
+
+			movex = int(math.floor(mx))
+			movey = int(math.floor(my))
+
+			i.v.forgottenx = mx - math.floor(mx)
+			i.v.forgotteny = my - math.floor(my)
 
 			mcm = self.game_map.collision_map
+			pixels_touched = 0
 
 			while( movex != 0 or movey != 0 ):
+
+				if abs(movex) > 0 and mcm[pixelx][pixely+1]==255:
+					pixels_touched+=1
 
 				if movex > 0:
 					if mcm[pixelx+1][pixely] == 0:
@@ -155,7 +165,8 @@ class Board:
 						pixely+=1
 						movey-=1
 					else:
-						i.v.forgotteny+=movey
+						if movey < 2:
+							i.v.forgotteny+=movey
 						movey = 0 
 						i.v.y = 0
 						i.handleTerrainImpact()
@@ -165,7 +176,9 @@ class Board:
 						pixely-=1
 						movey+=1
 					else:
-						i.v.forgotteny+=movey
+						if movey > -2:
+							i.v.forgotteny+=movey
+
 						movey = 0 
 						i.v.y = 0 
 						i.handleTerrainImpact()
@@ -173,6 +186,8 @@ class Board:
 				
 			i.rect.centerx = pixelx 
 			i.rect.bottom = pixely  
+			i.handleFriction(pixels_touched,self.gravity)
+
 
 	def _objectsCollide(self,obj1, obj2):
 
@@ -252,6 +267,18 @@ class BoardObject:
 
 	def applyVelocity(self,velocity):
 		self.v +=velocity
+
+
+	def handleFriction(self,pixels,gravity):
+
+		friction = pixels*gravity.y*self.friction
+		friction = math.copysign(friction, self.v.x)*-1
+		print "friction: %d pixels: %d "%(friction, pixels)	
+		if abs(friction) >= abs(self.v.x):
+			self.v.x=0
+		else:
+			self.v.x+=friction
+		print "after %d"%(self.v.x)
 
 	def applyForce(self,f):
 		"""self explanatory"""

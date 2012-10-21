@@ -13,15 +13,17 @@ class Player(BoardObject):
 		BoardObject.__init__(self,x,y,cm)
 		self.img = img
 		self.angle=angle
-		self.leftv = Vector2D(x=-1,y=0)
-		self.rightv = Vector2D(x=1,y=0)
+		self.leftv = Vector2D(x=-2,y=0)
+		self.rightv = Vector2D(x=2,y=0)
 		self.jumpv = Vector2D(x=0,y=-40)
 		self.jetv = Vector2D(x=0,y=-20)
+		self.xlimit = 5
+		self.ylimit = 10
 		self.ground = False
+		self.friction = 0.02
 
 	def handleTerrainImpact(self):
 		self.ground = True
-		print "terrain impact"
 		return False
 
 	def setAngle(self,angle):
@@ -34,19 +36,18 @@ class Player(BoardObject):
 			self.ground = False
 
 	def moveLeft(self):
+		
 		"""moves the character left"""
 		self.applyVelocity(self.leftv)
 
 	def moveRight(self):
 		"""moves the character right"""
 		self.applyVelocity(self.rightv)
-		pass
 
 	def jets(self):
+		"""fires the jets"""
 		self.applyVelocity(self.jetv)
 		self.ground = False
-		"""fires the jets"""
-		pass
 	def show(self,screen):
 		screen.blit(self.img,self.rect)
 	
