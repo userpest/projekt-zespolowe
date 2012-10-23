@@ -2,7 +2,7 @@
 from board import *
 from vector2d import *
 from pygame import *
-class Player(BoardObject):
+class Player(PhysicalObject):
 	#dummy
 	def __init__(self,x,y,angle, img_name, collision_map_name):
 		img_name = os.path.join('img',img_name)
@@ -10,7 +10,9 @@ class Player(BoardObject):
 
 		img = image.load(img_name).convert()
 		cm = image.load(collision_map_name).convert()
-		BoardObject.__init__(self,x,y,cm)
+
+		PhysicalObject.__init__(self,x,y,cm)
+
 		self.img = img
 		self.angle=angle
 		self.leftv = Vector2D(x=-2,y=0)

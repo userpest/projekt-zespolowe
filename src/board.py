@@ -114,8 +114,8 @@ class Board:
 	def _handleAttached(self):
 		for i in self.objects:
 			for attachement in i.attached:
-				attachement.rect.x = i.rect.x + attachement.attach_x
-				attachement.rect.y = i.rect.y + attachement.attach_y
+				attachement.rect.x = i.rect.centerx + attachement.attach_x
+				attachement.rect.y = i.rect.centery + attachement.attach_y
 				attachement.v = i.v
 				attachement.epoch()
 
@@ -142,14 +142,14 @@ class Board:
 			pixelx = i.rect.centerx
 			pixely = i.rect.bottom
 
-			mx=i.v.x+i.v.forgottenx
-			my=i.v.y+i.v.forgotteny
+			mx=i.v.x+i.forgottenx
+			my=i.v.y+i.forgotteny
 
 			movex = int(math.floor(mx))
 			movey = int(math.floor(my))
 
-			i.v.forgottenx = mx - math.floor(mx)
-			i.v.forgotteny = my - math.floor(my)
+			i.forgottenx = mx - math.floor(mx)
+			i.forgotteny = my - math.floor(my)
 
 			mcm = self.game_map.collision_map
 			pixels_touched = 0
@@ -168,7 +168,7 @@ class Board:
 						pixelx+=1
 						pixely+=1
 					else:
-						i.v.forgottenx+=movex
+						i.forgottenx+=movex
 						movex=0
 						i.v.x=0 
 
@@ -181,7 +181,7 @@ class Board:
 						pixelx-=1
 						pixely+=1
 					else:
-						i.v.forgottenx+=movex
+						i.forgottenx+=movex
 						movex=0
 						i.v.x = 0 
 
@@ -191,7 +191,7 @@ class Board:
 						movey-=1
 					else:
 						if movey < 2:
-							i.v.forgotteny+=movey
+							i.forgotteny+=movey
 						movey = 0 
 						i.v.y = 0
 						i.handleTerrainImpact()
@@ -202,7 +202,7 @@ class Board:
 						movey+=1
 					else:
 						if movey > -2:
-							i.v.forgotteny+=movey
+							i.forgotteny+=movey
 
 						movey = 0 
 						i.v.y = 0 
@@ -262,10 +262,17 @@ class BoardObject:
 	def __init__(self,x,y,v):
 		self.rect=Rect(x,y,666,666)
 		self.v = v
+		self.force = Vector2D()
 
 	def emit(self):
 		"""return a list of emitted projectiles"""
 		return []
+
+	def epoch(self):
+		""" stuff you would like to do in the game epoch,
+		stuff like dying to bullets or creating a harmful explosion """
+		return
+
 
 class AttachableObject(BoardObject):
 	def __init__(self,attach_x,attach_y):
@@ -274,13 +281,15 @@ class AttachableObject(BoardObject):
 		self.attach_x = attach_x
 		self.attach_y = attach_y
 
+
 class PhysicalObject(BoardObject):
 
 	def __init__(self,x,y,collision_map, mass=1,v=Vector2D()):
 
 		BoardObject.__init__(self,x,y,v)
-		self.v.forgotteny=0
-		self.v.forgottenx=0
+
+		self.forgotteny=0
+		self.forgottenx=0
 		self.mass=mass
 
 
@@ -341,11 +350,7 @@ class PhysicalObject(BoardObject):
 		"""if you dont want your object to be moved return False"""
 		return True
 
-	def epoch(self):
-		""" stuff you would like to do in the game epoch,
-		stuff like dying to bullets or creating a harmful explosion """
-		return
-
+	
 	def addCollision(self,obj):
 		return
 
