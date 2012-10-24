@@ -1,0 +1,14 @@
+add weapons:
+ -rocket launcher
+ -ak47
+ -pistol
+ -heat seeking missile
+ -grenade launcher
+ -flamethrower
+
+particle effect:
+-flames
+-smoke?
+
+[optional]
+-sprite support
