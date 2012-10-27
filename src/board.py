@@ -11,6 +11,7 @@ class GameMap:
 	def load(self,name):
 		mapname = os.path.join('maps',name)
 		self.game_map = image.load(mapname).convert()
+		self.game_map.rect = self.game_map.get_rect()
 		self.game_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(self.game_map)
 		self.game_map.set_colorkey(None)

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import math
 class Vector2D:
 
 	#gief overloading
@@ -57,3 +57,9 @@ class Vector2D:
 
 	def get_angle(self):
 		return math.atan2(self.x,self.y)
+
+	def dot(self,v):
+		return self.x*v.x + self.y*v.y
+	def dotAngle(self,v):
+		return math.acos(self.dot(v)/(self.__len__*len(v))
+

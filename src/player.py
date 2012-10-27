@@ -13,6 +13,11 @@ class Player(PhysicalObject):
 
 		PhysicalObject.__init__(self,x,y,cm)
 
+		self.left = False
+		self.right = False
+		self.jump = False
+		self.jets = False
+
 		self.img = img
 		self.angle=angle
 		self.leftv = Vector2D(x=-2,y=0)
@@ -31,6 +36,17 @@ class Player(PhysicalObject):
 	def setAngle(self,angle):
 		"""sets the weapon angle"""
 		pass
+
+	def epoch(self):
+		if left:
+			player.moveLeft()
+
+		if right:
+			player.moveRight()
+		if jump:
+			player.jump()
+		if jets:
+			player.jets()
 
 	def jump(self):
 		if self.ground:

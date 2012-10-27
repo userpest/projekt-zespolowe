@@ -9,16 +9,16 @@ class EventCallback:
 	def processEvents(self):
 		for event in pygame.event.get(): 
 			for callback in self.callbacks[event]:
-				callback()
+				callback(event)
 
-	def registerCallback(self,callback, trigger):
+	def registerCallback(self, trigger,callback):
 		if trigger not in self.callbacks:
 			self.callbacks[trigger]=[]
 
 		self.callbacks[trigger].append(callback)
 
-	def unreagisterCallback(self,callback,trigger):
-		if trigger in self.callbacks:
+	def unreagisterCallback(self,trigger,callback):
+		if trigger not in self.callbacks:
 			return
 
 		self.callbacks[trigger].remove(callback)

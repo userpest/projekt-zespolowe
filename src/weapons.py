@@ -9,7 +9,7 @@ class Bullet(PhysicalObject):
 
 class Weapon(AttachableObject):
 
-	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img,   projectiles_per_round = 1, cooldown = 0 ):
+	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img_left,img_right,   projectiles_per_round = 1, cooldown = 0 ):
 		"""img should be given for the rotation of 0 degree (as in polar coordinate system just replace radians with degrees ;x) """
 
 		AttachableObject.__init__(self,attachx,attachy)
@@ -29,12 +29,18 @@ class Weapon(AttachableObject):
 		self.current_outy = self.outy
 
 		self.img = img
-		self.imgs =[img]
-		for i in range(1,360):
-			self.img.append(transfrom.rotate(img,i))
+		self.imgs =[0]*360
+
+		for i in range(-90,90):
+			self.img[i%360]=transfrom.rotate(img_right,i)
+
+		for i in range(90,270):
+			self.img[i]=transfrom.rotate(img_left,i)
+
+
 
 	def emit(self):
-		if self.fire :
+		if self.fire and self.cooldown_timer==0:
 			to_emit = [] 
 
 			self.cooldown_timer = self.cooldown
@@ -48,7 +54,6 @@ class Weapon(AttachableObject):
 				to_emit.append(projectile)
 
 			self.ammo_count-=self.projectiles_per_round
-			self.fire = False
 
 			return to_emit
 
@@ -57,16 +62,12 @@ class Weapon(AttachableObject):
 		if self.cooldown_timer > 0:
 			self.cooldown_timer-=1
 
-	def fire(self):
-		if self.cooldown_timer == 0 :
-			self.fire = True
-
 	def setAngle(self,angle):
 		if self.angle != angle:
 			self.angle = angle
 			self.current_outx = int(self.outx*cos(angle))
 			self.current_outy = int(self.outy*sin(angle))
-			self.img = self.imgs[ int(angle/pi*180) ] 
+			self.img = self.imgs[ int(angle*180/pi)%360 ] 
 			
 
 class AK47(Weapon):
