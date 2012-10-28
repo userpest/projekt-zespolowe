@@ -52,14 +52,22 @@ class Vector2D:
 		self.x/=other
 		self.y/=other
 		return self
-	def __len__(self):
+
+	def getlen(self):
 		return math.sqrt(self.x*self.x+self.y*self.y)
 
 	def get_angle(self):
 		return math.atan2(self.x,self.y)
 
+	def __str__(self):
+		s = "Vector2D, x:%d y:%d"%(self.x,self.y)
+		return s
 	def dot(self,v):
 		return self.x*v.x + self.y*v.y
-	def dotAngle(self,v):
-		return math.acos(self.dot(v)/(self.__len__*len(v))
 
+	#not sure if works
+	def dotAngle(self,v):
+		ablen = self.getlen()*v.getlen()
+		dotprodtuct = self.dot(v)
+		angle = math.acos(dotprodtuct/ablen)
+		return math.acos(angle)

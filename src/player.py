@@ -2,9 +2,10 @@
 from board import *
 from vector2d import *
 from pygame import *
-class Player(PhysicalObject):
+from camera import *
+class Player(PhysicalObject, CameraObject):
 	#dummy
-	def __init__(self,x,y,angle, img_name, collision_map_name):
+	def __init__(self,x,y,angle, img_name, collision_map_name,visible=True):
 		img_name = os.path.join('img',img_name)
 		collision_map_name = os.path.join('img',collision_map_name)
 
@@ -12,6 +13,11 @@ class Player(PhysicalObject):
 		cm = image.load(collision_map_name).convert()
 
 		PhysicalObject.__init__(self,x,y,cm)
+
+		self.visible= visible
+
+		if visible:
+			CameraObject.__init__(self, img,self.rect)
 
 		self.left = False
 		self.right = False
@@ -38,17 +44,19 @@ class Player(PhysicalObject):
 		pass
 
 	def epoch(self):
-		if left:
-			player.moveLeft()
+		if self.left:
+			self.moveLeft()
 
-		if right:
-			player.moveRight()
-		if jump:
-			player.jump()
-		if jets:
-			player.jets()
+		if self.right:
+			self.moveRight()
 
-	def jump(self):
+		if self.jump:
+			self.performJump()
+
+		if self.jets:
+			self.useJets()
+
+	def performJump(self):
 		if self.ground:
 			self.applyVelocity(self.jumpv)
 			self.ground = False
@@ -62,10 +70,8 @@ class Player(PhysicalObject):
 		"""moves the character right"""
 		self.applyVelocity(self.rightv)
 
-	def jets(self):
+	def useJets(self):
 		"""fires the jets"""
 		self.applyVelocity(self.jetv)
 		self.ground = False
-	def show(self,screen):
-		screen.blit(self.img,self.rect)
 	

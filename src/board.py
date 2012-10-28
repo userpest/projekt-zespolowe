@@ -11,7 +11,7 @@ class GameMap:
 	def load(self,name):
 		mapname = os.path.join('maps',name)
 		self.game_map = image.load(mapname).convert()
-		self.game_map.rect = self.game_map.get_rect()
+		self.rect = self.game_map.get_rect()
 		self.game_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(self.game_map)
 		self.game_map.set_colorkey(None)
@@ -38,8 +38,12 @@ class GameMap:
 	#		self.collision_map = surfarray.array_colorkey(game_map)
 	#		self.changed = False
 		pass
-	def show(self,screen):
-		screen.blit(self.game_map,(0,0))
+	def setScreenStuff(self,screen,screen_rect):
+		self.screen = screen
+		self.screen_rect = screen_rect
+
+	def show(self):
+		self.screen.blit(self.game_map,Rect(0,0,0,0), area=self.screen_rect)
 
 class Board:
 	def __init__(self,game_map):
@@ -136,6 +140,7 @@ class Board:
 			projectile.y = parent.y
 			self.registerProprojectileectile(projectile)
 
+	#mess
 	def _handlePlayerMovement(self):
 		for i in self.players:
 			i.handleForce()
@@ -161,10 +166,20 @@ class Board:
 					pixels_touched+=1
 
 				if movex > 0:
-					if mcm[pixelx+1][pixely] == 0:
+
+					if pixelx+1 >= self.game_map.rect.right:
+						i.v.x = 0 
+						movex = 0 
+
+					elif mcm[pixelx+1][pixely] == 0:
 						pixelx+=1
 						movex-=1
-					elif mcm[pixelx+1][pixely+1] == 0 and movex>=2:
+
+					elif pixely-1 < 0 :
+						i.v.x =0 
+						movex =0 
+
+					elif mcm[pixelx+1][pixely-1] == 0 and movex>=2:
 						movex-=2
 						pixelx+=1
 						pixely+=1
@@ -174,10 +189,18 @@ class Board:
 						i.v.x=0 
 
 				if movex < 0:
-					if mcm[pixelx+1][pixely] == 0:
+
+					if pixelx - 1 <  0 :
+						i.v.x=0
+						movex = 0 
+
+					elif mcm[pixelx-1][pixely] == 0:
 						pixelx-=1
 						movex+=1
-					elif mcm[pixelx+1][pixely+1] == 0 and movex<=-2:
+					elif pixely-1 < 0:
+						i.v.x =0 
+						movex=0 
+					elif mcm[pixelx-1][pixely-1] == 0 and movex<=-2:
 						movex-=2
 						pixelx-=1
 						pixely+=1
@@ -187,7 +210,10 @@ class Board:
 						i.v.x = 0 
 
 				if movey > 0:
-					if mcm[pixelx][pixely+1] ==0 :
+					if pixely +1 >= self.game_map.rect.bottom:
+						i.v.y=0
+						movey = 0
+					elif mcm[pixelx][pixely+1] ==0 :
 						pixely+=1
 						movey-=1
 					else:
@@ -198,7 +224,10 @@ class Board:
 						i.handleTerrainImpact()
 
 				if movey < 0 :
-					if mcm[pixelx][pixely-1] == 0 :
+					if pixely - 1 < 0:
+						i.v.y = 0 
+						movey =0 
+					elif mcm[pixelx][pixely-1] == 0 :
 						pixely-=1
 						movey+=1
 					else:
@@ -331,12 +360,10 @@ class PhysicalObject(BoardObject):
 
 		friction = pixels*gravity.y*self.friction
 		friction = math.copysign(friction, self.v.x)*-1
-		print "friction: %d pixels: %d "%(friction, pixels)	
 		if abs(friction) >= abs(self.v.x):
 			self.v.x=0
 		else:
 			self.v.x+=friction
-		print "after %d"%(self.v.x)
 
 	def applyForce(self,f):
 		"""self explanatory"""

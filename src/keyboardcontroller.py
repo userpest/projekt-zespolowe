@@ -2,7 +2,8 @@ import pygame
 
 class KeyboardController:
 	#TODO: maybe parse some config
-	def __init__(self,event_callback,player):
+	def __init__(self,player,event_callback):
+		self.player= player
 		self.event_callback= event_callback
 		self.move_left_key =pygame.K_a
 		self.move_right_key = pygame.K_d
@@ -10,7 +11,7 @@ class KeyboardController:
 		self.jets_key = pygame.K_SPACE
 		
 		event_callback.registerCallback(pygame.KEYUP, self.keyUp)
-		event.callback.registerCallback(pygame.KEYDOWN, self.keyDown)
+		event_callback.registerCallback(pygame.KEYDOWN, self.keyDown)
 
 		
 	def keyDown(self,event):

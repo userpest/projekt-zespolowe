@@ -4,12 +4,14 @@ import pygame
 
 class EventCallback:
 	def __init__(self):
+		#could use a normal list for speed
 		self.callbacks = {}
 
 	def processEvents(self):
 		for event in pygame.event.get(): 
-			for callback in self.callbacks[event]:
-				callback(event)
+			if event.type in self.callbacks:
+				for callback in self.callbacks[event.type]:
+					callback(event)
 
 	def registerCallback(self, trigger,callback):
 		if trigger not in self.callbacks:
