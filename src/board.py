@@ -2,7 +2,9 @@
 import os 
 from pygame import *
 from vector2d import *
+from camera import *
 import math
+import resourcemanager
 
 class GameMap:
 	def __init__(self,name):
@@ -10,7 +12,7 @@ class GameMap:
 
 	def load(self,name):
 		mapname = os.path.join('maps',name)
-		self.game_map = image.load(mapname).convert()
+		self.game_map = resourcemanager.get_image(mapname)
 		self.rect = self.game_map.get_rect()
 		self.game_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(self.game_map)
@@ -300,11 +302,18 @@ class Board:
 
 
 
-class BoardObject:
-	def __init__(self,x,y,v):
-		self.rect=Rect(x,y,666,666)
+class BoardObject(CameraObject):
+	def __init__(self,x,y,v,img,visible=1):
+
+
+		self.rect=img.get_rect()
+		self.rect.x = x
+		self.rect.y=y
 		self.v = v
 		self.force = Vector2D()
+
+		if visible:
+			CameraObject.__init__(self, img,self.rect)
 
 	def emit(self):
 		"""return a list of emitted projectiles"""
@@ -317,18 +326,18 @@ class BoardObject:
 
 
 class AttachableObject(BoardObject):
-	def __init__(self,attach_x,attach_y):
+	def __init__(self,attach_x,attach_y,img,visible=1):
 
-		BoardObject.__init__(0,0, Vector2D(0,0))
+		BoardObject.__init__(0,0, Vector2D(0,0),img,visible)
 		self.attach_x = attach_x
 		self.attach_y = attach_y
 
 
 class PhysicalObject(BoardObject):
 
-	def __init__(self,x,y,collision_map, mass=1,v=Vector2D()):
+	def __init__(self,x,y,collision_map, img,visible=1,mass=1,v=Vector2D()):
 
-		BoardObject.__init__(self,x,y,v)
+		BoardObject.__init__(self,x,y,v,img,visible)
 
 		self.forgotteny=0
 		self.forgottenx=0
@@ -346,6 +355,7 @@ class PhysicalObject(BoardObject):
 		tmprect.x = self.rect.x
 		tmprect.y = self.rect.y
 		self.rect = tmprect
+		self.real_coords_rect = tmprect
 		collision_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(collision_map)
 		

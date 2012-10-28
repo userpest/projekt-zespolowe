@@ -3,21 +3,20 @@ from board import *
 from vector2d import *
 from pygame import *
 from camera import *
+import resourcemanager
+
 class Player(PhysicalObject, CameraObject):
 	#dummy
 	def __init__(self,x,y,angle, img_name, collision_map_name,visible=True):
 		img_name = os.path.join('img',img_name)
 		collision_map_name = os.path.join('img',collision_map_name)
 
-		img = image.load(img_name).convert()
-		cm = image.load(collision_map_name).convert()
-
-		PhysicalObject.__init__(self,x,y,cm)
+		img = resourcemanager.get_image(img_name)
+		cm =  resourcemanager.get_image(collision_map_name) 
+		PhysicalObject.__init__(self,x,y,cm,img,visible)
 
 		self.visible= visible
 
-		if visible:
-			CameraObject.__init__(self, img,self.rect)
 
 		self.left = False
 		self.right = False

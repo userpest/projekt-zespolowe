@@ -4,6 +4,7 @@ import pygame
 import math
 from vector2d import *
 import os
+import  resourcemanager
 
 #TODO: add different movement speeds
 class Crosshair:
@@ -22,7 +23,7 @@ class Crosshair:
 
 	def setCrosshair(self,img_name):
 		img_path = os.path.join('img',img_name)
-		self.img = pygame.image.load(img_path).convert()
+		self.img = resourcemanager.get_image(img_path)
 		self.img.set_colorkey(pygame.Color("Black"))
 		self.rect=self.img.get_rect()
 		self.rect.centerx,self.rect.centery = pygame.mouse.get_pos()

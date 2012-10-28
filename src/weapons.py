@@ -4,15 +4,26 @@ from pygame import *
 from math import *
 
 class Bullet(PhysicalObject):
-	def __init__(self,angle):
+	def __init__(self,angle,dmg):
 		self.angle = angle
 
+	def damage(self):
+
+	def unregister(self):
+		if
+
+def Ak47Bullet(PhysicalObject):
+	def __init__(self):
+
+	def damage(self):
+
+#this can make the weapons loadable from config
 class Weapon(AttachableObject):
 
-	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img_left,img_right,   projectiles_per_round = 1, cooldown = 0 ):
+	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img_left,img_right,visible = 1 , projectiles_per_round = 1, cooldown = 0 ):
 		"""img should be given for the rotation of 0 degree (as in polar coordinate system just replace radians with degrees ;x) """
 
-		AttachableObject.__init__(self,attachx,attachy)
+		AttachableObject.__init__(self,attachx,attachy,visible)
 
 		self.ammo_count = ammo_count
 		self.ammo = ammo		
@@ -67,7 +78,10 @@ class Weapon(AttachableObject):
 			self.angle = angle
 			self.current_outx = int(self.outx*cos(angle))
 			self.current_outy = int(self.outy*sin(angle))
-			self.img = self.imgs[ int(angle*180/pi)%360 ] 
+
+			angle = 2*pi - angle
+			angle_in_deg= int(angle*180/pi)%360
+			self.img = self.imgs[angle] 
 			
 
 class AK47(Weapon):
