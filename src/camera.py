@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import pygame
 
-#works under hopeful assumption that map is not smaller than the screen size
 class Camera:
 	def __init__(self):
 		self.track=False

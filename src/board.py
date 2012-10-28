@@ -279,9 +279,21 @@ class Board:
 		mcm = self.game_map.collision_map
 		cm = obj1.collision_map
 
-		for y in range(0, r.height):
-			for x in range(0,r.width):
-				if mcm[r.x+x][r.y+y] & cm[x][y]:
+		
+		for y in range(0, overlap.height):
+			for x in range(0,overlap.width):
+				#TODO:temporary
+				curx = r.x+y
+				cury = r.y+y
+				if (curx < 0 
+				     or 
+				     curx >= self.game_map.rect.right
+				     or
+				     cury < 0 
+				     or 
+				     cury >= self.game_map.rect.bottom
+				     or
+				     mcm[r.x+x][r.y+y] & cm[x][y]):
 					return True
 
 		return False
