@@ -2,6 +2,7 @@
 from board import *
 from pygame import *
 from math import *
+import resourcemanager
 
 class Bullet(PhysicalObject):
 	def __init__(self,angle,dmg):
@@ -39,14 +40,14 @@ class Weapon(AttachableObject):
 		self.current_outx = self.outx
 		self.current_outy = self.outy
 
-		self.img = img
+		self.img = resourcemanager.get_image(img_right)
 		self.imgs =[0]*360
 
 		for i in range(-90,90):
-			self.img[i%360]=transfrom.rotate(img_right,i)
+			self.img[i%360]=resourcemanager.rotate_image(img_right,i)
 
 		for i in range(90,270):
-			self.img[i]=transfrom.rotate(img_left,i)
+			self.img[i]=resourcemanager.rotate_image(img_left,i)
 
 
 

@@ -22,8 +22,10 @@ def clear():
 	__cache = {}
 
 def rotate_image(name,angle):
-	if cache[name][angle]==None :
-		img = get_image(name)
-		__cache[name][angle] = transfrom.rotate(img,angle)
 
-	return rotation_cache[name][angle]
+	img = get_image(name)
+
+	if cache[name][angle]==None :
+		__cache[name][angle] = transform.rotate(img,angle)
+
+	return __cache[name][angle]
