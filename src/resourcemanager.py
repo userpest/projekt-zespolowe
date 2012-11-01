@@ -7,7 +7,7 @@ __cache = {}
 #and my lack of motivation to patch the sources
 __refcount = {}
 
-def get_image(name, force_reload = False):
+def get_image(name, force_reload = False,colorkey=Color("Black")):
 
 	if name not in __cache or force_reload:
 		unload(name)

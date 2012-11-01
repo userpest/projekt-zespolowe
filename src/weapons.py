@@ -3,65 +3,70 @@ from board import *
 from pygame import *
 from math import *
 import resourcemanager
+import os
 
 class Ak47Bullet(PhysicalObject):
 	def __init__(self,visible):
-		PhysicalObject()
-	def damage(self):
-		return 10	
-	def handleTerrainImpact
-	def unregister(self):
-		if
+		img = resourcemanager.get_image(os.path.join('img','weapons','ak47','bullet.png'))
+		cm = resourcemanager.get_image(os.path.join('img','weapons','ak47','bullet_collision_map.png'))
+		img.set_colorkey(Color("Black"))
+		cm.set_colorkey(Color("Red"))
+		PhysicalObject.__init__(self,0,0,cm,img)
+		self.damage=10
+	def die(self):
+		self.unregister=True
+	def handleTerrainImpact(self):
+		self.die()
+	def handleObjectImpact(self):
+		self.die()
 
-
-def Ak47Bullet(PhysicalObject):
-	def __init__(self):
-
-	def damage(self):
 
 #this can make the weapons loadable from config
 class Weapon(AttachableObject):
 
-	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img_left,img_right,visible = 1 , projectiles_per_round = 1, cooldown = 0 ):
+	def __init__(self,attachx, attachy, ammo,ammo_count, exit_coords, exit_speed,img_left,img_right,visible = 1 , projectiles_per_round = 1, cooldown = 0, colorkey = Color("Black")):
 		"""img should be given for the rotation of 0 degree (as in polar coordinate system just replace radians with degrees ;x) """
-
-		AttachableObject.__init__(self,attachx,attachy,visible)
+		self.img = resourcemanager.get_image(img_right,colorkey=Color("White"))
+		AttachableObject.__init__(self,attachx,attachy,self.img,visible)
 
 		self.img_left= img_left
 		self.img_right = img_right
 
 		self.ammo_count = ammo_count
 		self.ammo = ammo		
-		self.per_round = per_round
+		self.per_round = projectiles_per_round
 		self.cooldown = cooldown
 		self.cooldown_timer = 0 
 		self.angle = 0 
 		self.outx, self.outy = exit_coords
 		self.exit_speed = exit_speed
-		self.fire =false
+		self.fire =False
 		self.projectiles_per_round= projectiles_per_round
 
 		self.current_outx = self.outx
 		self.current_outy = self.outy
 
-		self.img = resourcemanager.get_image(img_right)
 		self.imgs =[0]*360
 
 		for i in range(-90,90):
-			self.img[i%360]=resourcemanager.rotate_image(img_right,i)
+			img = resourcemanager.rotate_image(img_right,i)
+			img.set_colorkey(colorkey)
+			self.imgs[i%360]=img
 
 		for i in range(90,270):
-			self.img[i]=resourcemanager.rotate_image(img_left,i)
+			img = resourcemanager.rotate_image(img_left,i-180)
+			img.set_colorkey(colorkey)
+			self.imgs[i]= img
 
 
 
 	def emit(self):
 		if self.fire and self.cooldown_timer==0:
-			to_emit = [] 
+			to_emit = []
 
 			self.cooldown_timer = self.cooldown
 
-			for i in range(1,self.projectiles_per_round):
+			for i in range(0,self.projectiles_per_round):
 				projectile = self.ammo()
 				projectile.v = Vector2D(self.exit_speed, self.angle)
 				projectile.rect.x = self.current_outx
@@ -86,8 +91,8 @@ class Weapon(AttachableObject):
 
 			angle = 2*pi - angle
 			angle_in_deg= int(angle*180/pi)%360
-			self.img = self.imgs[angle] 
-			
+			self.img = self.imgs[angle_in_deg]
+
 	def __del__(self):
 		img_right = self.img_right
 		img_left = self.img_left
@@ -99,5 +104,11 @@ class Weapon(AttachableObject):
 
 
 class AK47(Weapon):
-	def __init__(self):
-
+	def __init__(self,visible=True):
+		self.visible=visible
+		img_dir=os.path.join('img','weapons','ak47')
+		img_left = os.path.join(img_dir,'ak47_left.png')
+		img_right = os.path.join(img_dir, 'ak47_right.png')
+		Weapon.__init__(self,0,0,self.shot,100,(20,0),20,img_left,img_right,cooldown=1,colorkey=Color("White"))
+	def shot(self):
+		return Ak47Bullet(self.visible)

@@ -3,6 +3,8 @@ from board import *
 from vector2d import *
 from pygame import *
 from camera import *
+from weapons import *
+
 import resourcemanager
 
 class Player(PhysicalObject, CameraObject):
@@ -14,8 +16,6 @@ class Player(PhysicalObject, CameraObject):
 		img = resourcemanager.get_image(img_name)
 		cm =  resourcemanager.get_image(collision_map_name) 
 		PhysicalObject.__init__(self,x,y,cm,img,visible)
-
-		self.visible= visible
 
 
 		self.left = False
@@ -33,14 +33,24 @@ class Player(PhysicalObject, CameraObject):
 		self.ylimit = 10
 		self.ground = False
 		self.friction = 0.02
+		self.weapons = [None]*3
+		self.weapons[0]=AK47()
+		self.weapon = self.weapons[0]
+		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
+
+	def setWeapon(self,num):
+			self.unattach(self.weapon)
+			self.weapon = self.weapons[num]
+			self.attach(self.weapon, 0, 0)
 
 	def handleTerrainImpact(self):
-		self.ground = True
-		return False
+			self.ground = True
+
 
 	def setAngle(self,angle):
 		"""sets the weapon angle"""
-		pass
+		self.weapon.setAngle(angle)
+
 
 	def epoch(self):
 		if self.left:
@@ -61,7 +71,7 @@ class Player(PhysicalObject, CameraObject):
 			self.ground = False
 
 	def moveLeft(self):
-		
+
 		"""moves the character left"""
 		self.applyVelocity(self.leftv)
 
@@ -73,4 +83,4 @@ class Player(PhysicalObject, CameraObject):
 		"""fires the jets"""
 		self.applyVelocity(self.jetv)
 		self.ground = False
-	
+

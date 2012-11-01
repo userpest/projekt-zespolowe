@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import pygame
-
+import weakref
 class Camera:
 	def __init__(self):
 		self.track=False
@@ -8,7 +8,7 @@ class Camera:
 
 	def track(self,tracked):
 		self.track = True
-		self.tracked = tracked
+		self.tracked = weakref.proxy(tracked)
 
 	def untrack(self,tracked):
 		self.track = False
@@ -75,7 +75,10 @@ class Camera:
 			self.lookAt(tracked.centerx,tracked.centery)
 
 		for i in self.objects:
-			i.show()	
+			if i.unregister:
+				self.unregister(i)
+			else:
+				i.show()
 
 		
 
@@ -88,22 +91,19 @@ class CameraObject:
 		self.real_coords_rect = real_coords_rect
 		self.camerapos=pygame.Rect(0,0,real_coords_rect.width,real_coords_rect.height)
 		self.img = img
+		self.unregister = False
 		global camera
 		camera.register(self)
 
 	def show(self):
 		r = self.camerapos
 		real_coords_rect = self.real_coords_rect
-		r.x = real_coords_rect.x - self.screen_rect.x
-		r.y = real_coords_rect.y - self.screen_rect.y
+		r.centerx = real_coords_rect.centerx - self.screen_rect.x
+		r.centery = real_coords_rect.centery - self.screen_rect.y
 		if ( r.right > 0 and r.left < self.screen_rect.width and r.bottom > 0 and r.top < self.screen_rect.height): 
 			self.screen.blit(self.img,r)
 
 	def registerScreen(self, screen,screen_rect):
 		self.screen = screen
 		self.screen_rect = screen_rect
-
-	def unregister(self):
-		global camera
-		camera.unregister(self)
 

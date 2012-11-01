@@ -10,7 +10,8 @@ from crosshair import *
 import sys
 
 
-def quit(self, event):
+def quit(event):
+	pygame.quit()
 	sys.exit(1)
 
 

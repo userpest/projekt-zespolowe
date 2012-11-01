@@ -21,7 +21,7 @@ class GameMap:
 
 	def processProjectile(self, obj):
 		#TODO: optimize - this function should modify the collision map only in the place of impact
-		self.game_map.blit(obj.img,obj.img.rect)		
+		self.game_map.blit(obj.cm,obj.rect)
 
 		r = obj.rect
 		mcm = self.collision_map
@@ -29,9 +29,10 @@ class GameMap:
 
 		for y in range(0, r.height):
 			for x in range(0,r.width):
-				if mcm[r.x+x][r.y+y] & cm[x][y]:
-					mcm[r.x+x][r.y+y]=0
-		
+				if r.x+x  > 0 and r.x+x < self.rect.right and r.y+y > 0 and r.y+y < self.rect.bottom:
+					if mcm[r.x+x][r.y+y] & cm[x][y]:
+						mcm[r.x+x][r.y+y]=0
+
 	#	self.changed = True
 
 	def epoch(self):	
@@ -53,7 +54,7 @@ class Board:
 		self.players =  [] 
 		self.projectiles = []
 		self.objects = [] 
-		self.gravity = Vector2D(x=0,y=10)
+		self.gravity = Vector2D(x=0,y=1)
 
 	def epoch(self,):
 		"""call me every frame"""
@@ -69,7 +70,7 @@ class Board:
 				self._addEmittedProjectile(j,i)
 
 
-			if i.unregister():
+			if i.unregister:
 				self.unregisterProjectile(i)
 
 		for i in self.players:
@@ -78,7 +79,7 @@ class Board:
 			for j in i.emit():
 				self._addEmittedProjectile(j,i)
 
-			if i.unregister():
+			if i.unregister:
 				self.unregisterPlayer(i)
 
 	def registerPlayer(self, obj):
@@ -108,7 +109,7 @@ class Board:
 
 	def _handleTerrainCollisions(self):
 		for i in self.projectiles:
-			if i.movable() and self._terrainCollision(i):
+			if i.movable and self._terrainCollision(i):
 				self.game_map.processProjectile(i)	
 				i.handleTerrainImpact()
 
@@ -121,26 +122,28 @@ class Board:
 	def _handleAttached(self):
 		for i in self.objects:
 			for attachement in i.attached:
-				attachement.rect.x = i.rect.centerx + attachement.attach_x
-				attachement.rect.y = i.rect.centery + attachement.attach_y
+				attachement.rect.centerx = i.rect.centerx + attachement.attach_x
+				attachement.rect.centery = i.rect.centery + attachement.attach_y
 				attachement.v = i.v
 				attachement.epoch()
-
-				for j in attachement.emit():
-					self._addEmittedProjectile(j,attachement)
+				bulletz = attachement.emit()
+				if bulletz is not None:
+					for j in bulletz:
+						self._addEmittedProjectile(j,attachement)
 
 	def _handleProjectileMovement(self):
 
 		for i in self.projectiles:
-			r = i.sprite.rect
-			r.x +=v.x
-			r.y += v.y
+			i.v+=self.gravity
+			r = i.rect
+			r.x +=i.v.x
+			r.y += i.v.y
 
 	def _addEmittedProjectile(self,projectile,parent):
 			projectile.v+=parent.v
-			projectile.x = parent.x
-			projectile.y = parent.y
-			self.registerProprojectileectile(projectile)
+			projectile.rect.x += parent.rect.x
+			projectile.rect.y += parent.rect.y
+			self.registerProjectile(projectile)
 
 	#mess
 	def _handlePlayerMovement(self):
@@ -240,7 +243,7 @@ class Board:
 						i.v.y = 0 
 						i.handleTerrainImpact()
 
-				
+
 			i.rect.centerx = pixelx 
 			i.rect.bottom = pixely  
 			i.handleFriction(pixels_touched,self.gravity)
@@ -248,7 +251,7 @@ class Board:
 
 	def _objectsCollide(self,obj1, obj2):
 
-		if not obj1.collides() or not obj2.collides():
+		if not obj1.collides or not obj2.collides:
 			return False
 
 		r1 = obj1.rect
@@ -274,28 +277,28 @@ class Board:
 
 	def _terrainCollision(self,obj1):
 
-		if not obj1.collides():
+		if not obj1.collides:
 			return False
 
 		r = obj1.rect
 		mcm = self.game_map.collision_map
 		cm = obj1.collision_map
 
-		
-		for y in range(0, overlap.height):
-			for x in range(0,overlap.width):
+
+		for y in range(0, r.height):
+			for x in range(0,r.width):
 				#TODO:temporary
-				curx = r.x+y
+				curx = r.x+x
 				cury = r.y+y
 				if (curx < 0 
-				     or 
-				     curx >= self.game_map.rect.right
-				     or
-				     cury < 0 
-				     or 
-				     cury >= self.game_map.rect.bottom
-				     or
-				     mcm[r.x+x][r.y+y] & cm[x][y]):
+					 or
+					 curx >= self.game_map.rect.right
+					 or
+					 cury < 0
+					 or
+					 cury >= self.game_map.rect.bottom
+					 or
+					 mcm[r.x+x][r.y+y] & cm[x][y]):
 					return True
 
 		return False
@@ -304,7 +307,6 @@ class Board:
 
 class BoardObject(CameraObject):
 	def __init__(self,x,y,v,img,visible=1):
-
 
 		self.rect=img.get_rect()
 		self.rect.x = x
@@ -328,7 +330,7 @@ class BoardObject(CameraObject):
 class AttachableObject(BoardObject):
 	def __init__(self,attach_x,attach_y,img,visible=1):
 
-		BoardObject.__init__(0,0, Vector2D(0,0),img,visible)
+		BoardObject.__init__(self,0,0, Vector2D(0,0),img,visible)
 		self.attach_x = attach_x
 		self.attach_y = attach_y
 
@@ -342,8 +344,10 @@ class PhysicalObject(BoardObject):
 		self.forgotteny=0
 		self.forgottenx=0
 		self.mass=mass
-
-
+		self.collides=True
+		self.movable=True
+		self.damage=0
+		self.cm=collision_map
 		self.setCollisionMap(collision_map)
 
 		self.v = Vector2D() 
@@ -356,15 +360,11 @@ class PhysicalObject(BoardObject):
 		tmprect.y = self.rect.y
 		self.rect = tmprect
 		self.real_coords_rect = tmprect
-		collision_map.set_colorkey(Color("Black"))
 		self.collision_map = surfarray.array_colorkey(collision_map)
-		
-	def collides(self):
-		return True
+
 	def handleObjectImpact(self):
-	 	"""return something youd like to pass to the other object, 
-		like the harm you do to it"""
-		return None
+		"""callback on impact"""
+		pass
 
 	def handleTerrainImpact(self):
 		""" callback on terrain impact"""
@@ -396,24 +396,15 @@ class PhysicalObject(BoardObject):
 		self.force.x=0
 		self.force.y=0
 
-	def movable(self):
-		"""if you dont want your object to be moved return False"""
-		return True
-
-	
 	def addCollision(self,obj):
 		return
 
-	def unregister(self):
-		"""return true if you want to unregister from engine"""
-		return False
 
 	def attach(self,obj,x,y):
+		obj.attach_x=x
+		obj.attach_y=y
 		self.attached.append(obj)
 
 	def unattach(self,obj):
 		self.attached.remove(obj)
-	def damage(self):
-		"""overload if object deals dmg on impact"""
-		return 0
 
