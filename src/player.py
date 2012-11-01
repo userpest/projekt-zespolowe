@@ -4,11 +4,12 @@ from vector2d import *
 from pygame import *
 from camera import *
 from weapons import *
-
+from bitarray import *
+import pickle
 import resourcemanager
 
-class Player(PhysicalObject, CameraObject):
-	#dummy
+#if you want the entire class for resync pickle the entire fucker for satan
+class Player(PhysicalObject):
 	def __init__(self,x,y,angle, img_name, collision_map_name,visible=True):
 		img_name = os.path.join('img',img_name)
 		collision_map_name = os.path.join('img',collision_map_name)
@@ -17,11 +18,12 @@ class Player(PhysicalObject, CameraObject):
 		cm =  resourcemanager.get_image(collision_map_name) 
 		PhysicalObject.__init__(self,x,y,cm,img,visible)
 
-
-		self.left = False
-		self.right = False
-		self.jump = False
-		self.jets = False
+		self.moves = bitarray([False]*5)
+		self.lefti = 0
+		self.righti = 1
+		self.jumpi = 2
+		self.jetsi = 3
+		self.firei = 4
 
 		self.img = img
 		self.angle=angle
@@ -37,8 +39,9 @@ class Player(PhysicalObject, CameraObject):
 		self.weapons[0]=AK47()
 		self.weapon = self.weapons[0]
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
-
+		self.weaponnum = 0
 	def setWeapon(self,num):
+			self.weaponnum = num
 			self.unattach(self.weapon)
 			self.weapon = self.weapons[num]
 			self.attach(self.weapon, 0, 0)
@@ -83,4 +86,45 @@ class Player(PhysicalObject, CameraObject):
 		"""fires the jets"""
 		self.applyVelocity(self.jetv)
 		self.ground = False
+	@property
+	def left(self):
+		return self.moves[self.lefti]
+	@left.setter
+	def left(self,v):
+		self.moves[self.lefti]=v
+	@property
+	def right(self):
+		return self.moves[self.righti]
+	@right.setter
+	def right(self,v):
+		self.moves[self.righti]=v
+	@property
+	def jump(self):
+		return self.moves[self.jumpi]
+	@jump.setter
+	def jump(self,v):
+		self.moves[self.jumpi]=v
+	@property
+	def jets(self):
+		return self.moves[self.jetsi]
+	@jets.setter
+	def jets(self,v):
+		self.moves[self.jetsi]=v
+	@property
+	def fire(self):
+		return self.moves[self.firei]
+	@fire.setter
+	def fire(self,v):
+		self.moves[self.firei]=v
+		self.weapon.fire=v
 
+	def getMoves(self):
+		return pickle.dumps([self.moves.tobytes(),self.weaponnum,self.weapon.angle])
+
+	def setMoves(self,data):
+		d = pickle.loads(data)
+		self.moves.frombytes(data[0])
+		self.weaponnum = data[1]
+		self.setWeapon(self.weaponnum)
+		self.weapon.fire=self.moves[self.firei]
+		self.weapon.angle = data[2]

@@ -53,7 +53,7 @@ class Crosshair:
 		self.rect.y = y
 
 	def startFire(self,event):
-		self.player.weapon.fire = True
+		self.player.fire = True
 	def stopFire(self,event):
-		self.player.weapon.fire = False
+		self.player.fire = False
 

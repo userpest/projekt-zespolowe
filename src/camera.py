@@ -85,7 +85,7 @@ class Camera:
 #messy
 camera = Camera()
 
-class CameraObject:
+class CameraObject(object):
 
 	def __init__(self,img,real_coords_rect):
 		self.real_coords_rect = real_coords_rect
