@@ -413,4 +413,7 @@ class PhysicalObject(BoardObject):
 
 	def unattach(self,obj):
 		self.attached.remove(obj)
+	def damage(self):
+		"""overload if object deals dmg on impact"""
+		return 0
 

@@ -4,14 +4,15 @@ from pygame import *
 from math import *
 import resourcemanager
 
-class Bullet(PhysicalObject):
-	def __init__(self,angle,dmg):
-		self.angle = angle
-
+class Ak47Bullet(PhysicalObject):
+	def __init__(self,visible):
+		PhysicalObject()
 	def damage(self):
-
+		return 10	
+	def handleTerrainImpact
 	def unregister(self):
 		if
+
 
 def Ak47Bullet(PhysicalObject):
 	def __init__(self):
@@ -25,6 +26,9 @@ class Weapon(AttachableObject):
 		"""img should be given for the rotation of 0 degree (as in polar coordinate system just replace radians with degrees ;x) """
 
 		AttachableObject.__init__(self,attachx,attachy,visible)
+
+		self.img_left= img_left
+		self.img_right = img_right
 
 		self.ammo_count = ammo_count
 		self.ammo = ammo		
@@ -84,6 +88,15 @@ class Weapon(AttachableObject):
 			angle_in_deg= int(angle*180/pi)%360
 			self.img = self.imgs[angle] 
 			
+	def __del__(self):
+		img_right = self.img_right
+		img_left = self.img_left
+		for i in range(-90,90):
+			self.img[i%360]=resourcemanager.free(img_right,i)
+
+		for i in range(90,270):
+			self.img[i]=resourcemanager.free(img_left,i)
+
 
 class AK47(Weapon):
 	def __init__(self):

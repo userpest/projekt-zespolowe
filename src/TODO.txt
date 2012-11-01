@@ -1,0 +1,14 @@
+weapons:
+-bazooka
+-ak47
+-grenade
+-grenade bounce
+-dmg system
+-scoreboard class
+-spawning mechanism
+
+
+functions bout object status loading/returning status struct:
+-current move ( players)
+-current status (all objects - serialisation for satan ? ) 
+
