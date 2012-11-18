@@ -55,6 +55,7 @@ class Board:
 		self.projectiles = []
 		self.objects = [] 
 		self.gravity = Vector2D(x=0,y=1)
+		self.objects_by_id = {}
 
 	def epoch(self,):
 		"""call me every frame"""
@@ -83,21 +84,38 @@ class Board:
 				self.unregisterPlayer(i)
 
 	def registerPlayer(self, obj):
+		self._addID(obj)
 		self.players.append(obj)
 		self.objects.append(obj)
 
 	def unregisterPlayer(self,obj):
+		self._remID(obj)
 		self.players.remove(obj)
 		self.objects.remove(obj)
 
 	def registerProjectile(self,obj):
+		self._addID(obj)
 		self.projectiles.append(obj)
 		self.objects.append(obj)
 
 	def unregisterProjectile(self, obj):
+		self._remID(obj)
 		self.projectiles.remove(obj)
 		self.objects.remove(obj)
 
+	def getObjectByID(self,obj_id):
+		return self.objects_by_id[obj_id]
+
+	def getObjects(self):
+		return self.objects
+
+	def _addID(self,obj):
+		if obj.obj_id != None:
+			self.objects_by_id[obj.obj_id] = obj
+
+	def _remID(self,obj):
+		if obj.obj_id != None:
+			del self.objects_by_id[obj.obj_id] = obj
 
 	#TODO: OPTIMIZE
 	def _handleObjectCollisions(self):
@@ -306,13 +324,14 @@ class Board:
 
 
 class BoardObject(CameraObject):
-	def __init__(self,x,y,v,img,visible=1):
+	def __init__(self,x,y,v,img, visible=1,obj_id = None):
 
 		self.rect=img.get_rect()
 		self.rect.x = x
 		self.rect.y=y
 		self.v = v
 		self.force = Vector2D()
+		self.obj_id = obj_id
 
 		if visible:
 			CameraObject.__init__(self, img,self.rect)
@@ -328,18 +347,18 @@ class BoardObject(CameraObject):
 
 
 class AttachableObject(BoardObject):
-	def __init__(self,attach_x,attach_y,img,visible=1):
+	def __init__(self,attach_x,attach_y,img, visible=1,obj_id = None):
 
-		BoardObject.__init__(self,0,0, Vector2D(0,0),img,visible)
+		BoardObject.__init__(self,0,0, Vector2D(0,0),img,visible,obj_id)
 		self.attach_x = attach_x
 		self.attach_y = attach_y
 
 
 class PhysicalObject(BoardObject):
 
-	def __init__(self,x,y,collision_map, img,visible=1,mass=1,v=Vector2D()):
+	def __init__(self,x,y,collision_map, img,visible=1,mass=1,v=Vector2D(), obj_id = None):
 
-		BoardObject.__init__(self,x,y,v,img,visible)
+		BoardObject.__init__(self,x,y,v,img,visible, obj_id)
 
 		self.forgotteny=0
 		self.forgottenx=0

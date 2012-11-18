@@ -80,6 +80,11 @@ class Camera:
 			else:
 				i.show()
 
+	def registerObjects(self,objs):
+		for i in objs:
+			self.register(i)
+
+
 		
 
 #messy

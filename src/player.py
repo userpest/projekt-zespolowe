@@ -10,13 +10,13 @@ import resourcemanager
 
 #if you want the entire class for resync pickle the entire fucker for satan
 class Player(PhysicalObject):
-	def __init__(self,x,y,angle, img_name, collision_map_name,visible=True):
+	def __init__(self,x,y,angle, img_name, collision_map_name,obj_id = None, visible=True):
 		img_name = os.path.join('img',img_name)
 		collision_map_name = os.path.join('img',collision_map_name)
 
 		img = resourcemanager.get_image(img_name)
 		cm =  resourcemanager.get_image(collision_map_name) 
-		PhysicalObject.__init__(self,x,y,cm,img,visible)
+		PhysicalObject.__init__(self,x,y,cm,img,visible,obj_id)
 
 		self.moves = bitarray([False]*5)
 		self.lefti = 0
