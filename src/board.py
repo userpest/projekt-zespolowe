@@ -109,6 +109,9 @@ class Board:
 	def getObjects(self):
 		return self.objects
 
+	def getGameMap(self):
+		return self.game_map
+
 	def _addID(self,obj):
 		if obj.obj_id != None:
 			self.objects_by_id[obj.obj_id] = obj
