@@ -118,7 +118,7 @@ class Board:
 
 	def _remID(self,obj):
 		if obj.obj_id != None:
-			del self.objects_by_id[obj.obj_id] = obj
+			del self.objects_by_id[obj.obj_id]
 
 	#TODO: OPTIMIZE
 	def _handleObjectCollisions(self):

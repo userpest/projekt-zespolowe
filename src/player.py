@@ -16,7 +16,7 @@ class Player(PhysicalObject):
 
 		img = resourcemanager.get_image(img_name)
 		cm =  resourcemanager.get_image(collision_map_name) 
-		PhysicalObject.__init__(self,x,y,cm,img,visible,obj_id)
+		PhysicalObject.__init__(self,x,y,cm,img,mass = 1 , visible=visible,obj_id=obj_id)
 
 		self.moves = bitarray([False]*5)
 		self.lefti = 0
