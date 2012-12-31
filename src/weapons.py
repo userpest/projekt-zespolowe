@@ -33,7 +33,7 @@ class Weapon(AttachableObject):
 		self.img_right = img_right
 
 		self.ammo_count = ammo_count
-		self.ammo = ammo		
+		#self.ammo = ammo		
 		self.per_round = projectiles_per_round
 		self.cooldown = cooldown
 		self.cooldown_timer = 0 
@@ -67,7 +67,8 @@ class Weapon(AttachableObject):
 			self.cooldown_timer = self.cooldown
 
 			for i in range(0,self.projectiles_per_round):
-				projectile = self.ammo()
+				#projectile = self.ammo()
+				projectile = self.shot()
 				projectile.v = Vector2D(self.exit_speed, self.angle)
 				projectile.rect.x = self.current_outx
 				projectile.rect.y = self.current_outy
@@ -101,8 +102,9 @@ class Weapon(AttachableObject):
 
 		for i in range(90,270):
 			self.img[i]=resourcemanager.free(img_left,i)
-
-
+	#pseudo virtual fucntion
+	def shot(self):
+		pass
 class AK47(Weapon):
 	def __init__(self,visible=True):
 		self.visible=visible

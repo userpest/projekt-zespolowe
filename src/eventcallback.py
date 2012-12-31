@@ -19,7 +19,7 @@ class EventCallback:
 
 		self.callbacks[trigger].append(callback)
 
-	def unreagisterCallback(self,trigger,callback):
+	def unregisterCallback(self,trigger,callback):
 		if trigger not in self.callbacks:
 			return
 

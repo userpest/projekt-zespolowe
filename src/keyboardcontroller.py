@@ -37,5 +37,6 @@ class KeyboardController:
 			self.player.jets = False
 
 	def close(self):
-		event_callback.unregisterCallback(pygame.KEYUP, self.keyUp)
-		event.callback.unregisterCallback(pygame.KEYDOWN, self.keyDown)
+		self.event_callback.unregisterCallback(pygame.KEYUP, self.keyUp)
+		self.event_callback.unregisterCallback(pygame.KEYDOWN, self.keyDown)
+
