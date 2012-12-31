@@ -111,6 +111,6 @@ class AK47(Weapon):
 		img_dir=os.path.join('img','weapons','ak47')
 		img_left = os.path.join(img_dir,'ak47_left.png')
 		img_right = os.path.join(img_dir, 'ak47_right.png')
-		Weapon.__init__(self,0,0,self.shot,100,(20,0),20,img_left,img_right,cooldown=1,colorkey=Color("White"))
+		Weapon.__init__(self,0,0,self.shot,100,(20,0),17,img_left,img_right,cooldown=1,colorkey=Color("White"))
 	def shot(self):
 		return Ak47Bullet(self.visible)

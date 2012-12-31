@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 import pygame
 from player import *
@@ -38,4 +38,4 @@ while 1:
 	crosshair.show()
 	pygame.display.flip()
 
-	pygame.time.wait(50)
+	pygame.time.wait(16)

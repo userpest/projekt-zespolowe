@@ -27,10 +27,10 @@ class Player(PhysicalObject):
 
 		self.img = img
 		self.angle=angle
-		self.leftv = Vector2D(x=-2,y=0)
-		self.rightv = Vector2D(x=2,y=0)
-		self.jumpv = Vector2D(x=0,y=-40)
-		self.jetv = Vector2D(x=0,y=-20)
+		self.leftv = Vector2D(x=-0.1,y=0)
+		self.rightv = Vector2D(x=0.1,y=0)
+		self.jumpv = Vector2D(x=0,y=-5)
+		self.jetv = Vector2D(x=0,y=-0.2)
 		self.xlimit = 5
 		self.ylimit = 10
 		self.ground = False

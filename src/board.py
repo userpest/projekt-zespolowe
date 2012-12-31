@@ -54,7 +54,7 @@ class Board:
 		self.players =  [] 
 		self.projectiles = []
 		self.objects = [] 
-		self.gravity = Vector2D(x=0,y=1)
+		self.gravity = Vector2D(x=0,y=0.1)
 		self.objects_by_id = {}
 
 	def epoch(self,):
@@ -157,8 +157,8 @@ class Board:
 		for i in self.projectiles:
 			i.v+=self.gravity
 			r = i.rect
-			r.x +=i.v.x
-			r.y += i.v.y
+			r.x +=int(i.v.x)
+			r.y += int(i.v.y)
 
 	def _addEmittedProjectile(self,projectile,parent):
 			projectile.v+=parent.v
