@@ -6,6 +6,11 @@ from camera import *
 import math
 import resourcemanager
 
+def apply_bounds(minimal, maximal, value):
+	value = min ( value,maximal)
+	value = max (minimal,value)
+	return value
+
 class GameMap:
 	def __init__(self,name):
 		self.load(name)
@@ -127,10 +132,64 @@ class Board:
 				if self._objectsCollide(i,j):
 					i.addCollision(j)
 
+	#prevents tunnelling in the destructible terrain
+	#defo not the most beautifull or efficient code crafted by man
+	#in fact rather a contrary
+	#TODO:rewrite
+	def backtrackTunneling(self,projectile):
+		sign_x = int(math.copysign(1,-1*projectile.v.x))
+		sign_y = int(math.copysign(1,-1*projectile.v.y))
+		x = abs(projectile.v.x)
+		y = abs(projectile.v.y)
+		#meh not well thought
+		mcm = self.game_map.collision_map
+		bounds  = self.game_map.rect
 
+		s_x = apply_bounds(0,bounds.width-1,projectile.rect.centerx)
+		s_y = apply_bounds(0,bounds.height-1,projectile.rect.centery)
+		if x == 0 :
+			xstep = 0 
+			ystep = y
+		elif y == 0 :
+			xstep = x
+			ystep = 0 
+		elif x > y:
+			xstep = abs(int(x/y * sign_x))
+			ystep = 1
+		elif y > x: 
+			ystep= abs(int(y/x*sign_y))
+			xstep = 1 
+
+		print (x,y)
+		while x > 0 and y  > 0:
+
+#			print (x,y)
+			if x > 0:
+				for i in range(0,xstep):
+					x-=1
+					if s_x +sign_x < bounds.width  and s_x+sign_x > -1  :
+						s_x+=sign_x
+
+						if ( mcm[s_x][s_y] == 0 ):
+							projectile.rect.centerx = s_x
+							projectile.rect.centery = s_y
+							return
+			if y > 0 :
+				for i in range(0,ystep):
+					y-=1
+					if s_y + sign_y < bounds.height and s_y + sign_y > -1:
+						s_y+=sign_y
+						if ( mcm[s_x][s_y] == 0 ):
+							projectile.rect.centerx = s_x
+							projectile.rect.centery = s_y
+							return
+
+
+		
 	def _handleTerrainCollisions(self):
 		for i in self.projectiles:
 			if i.movable and self._terrainCollision(i):
+				self.backtrackTunneling(i)
 				self.game_map.processProjectile(i)	
 				i.handleTerrainImpact()
 
@@ -143,8 +202,8 @@ class Board:
 	def _handleAttached(self):
 		for i in self.objects:
 			for attachement in i.attached:
-				attachement.rect.centerx = i.rect.centerx + attachement.attach_x
-				attachement.rect.centery = i.rect.centery + attachement.attach_y
+				attachement.rect.centerx = i.rect.centerx #+ attachement.attach_x
+				attachement.rect.centery = i.rect.centery #+ attachement.attach_y
 				attachement.v = i.v
 				attachement.epoch()
 				bulletz = attachement.emit()
@@ -162,8 +221,8 @@ class Board:
 
 	def _addEmittedProjectile(self,projectile,parent):
 			projectile.v+=parent.v
-			projectile.rect.x += parent.rect.x
-			projectile.rect.y += parent.rect.y
+			projectile.rect.x += parent.rect.centerx
+			projectile.rect.y += parent.rect.centery
 			self.registerProjectile(projectile)
 
 	#mess
@@ -327,7 +386,7 @@ class Board:
 
 
 class BoardObject(CameraObject):
-	def __init__(self,x,y,v,img, visible=1,obj_id = None):
+	def __init__(self,x,y,v,img, visible=True,obj_id = None):
 
 		self.rect=img.get_rect()
 		self.rect.x = x
@@ -336,8 +395,7 @@ class BoardObject(CameraObject):
 		self.force = Vector2D()
 		self.obj_id = obj_id
 
-		if visible:
-			CameraObject.__init__(self, img,self.rect)
+		CameraObject.__init__(self, img,self.rect,visible)
 
 	def emit(self):
 		"""return a list of emitted projectiles"""

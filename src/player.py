@@ -37,7 +37,9 @@ class Player(PhysicalObject):
 		self.friction = 0.02
 		self.weapons = [None]*3
 		self.weapons[0]=AK47()
-		self.weapon = self.weapons[0]
+		self.weapons[0].visible=False
+		self.weapons[1] = TestWeapon()
+		self.weapon = self.weapons[1]
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 		self.weaponnum = 0
 	def setWeapon(self,num):
