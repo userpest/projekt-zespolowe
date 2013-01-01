@@ -6,7 +6,7 @@ class Camera:
 		self.track=False
 		self.objects = []
 
-	def track(self,tracked):
+	def trackObject(self,tracked):
 		self.track = True
 		self.tracked = weakref.proxy(tracked)
 

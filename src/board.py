@@ -4,6 +4,7 @@ from pygame import *
 from vector2d import *
 from camera import *
 import math
+from util import *
 import resourcemanager
 
 def apply_bounds(minimal, maximal, value):
@@ -137,53 +138,26 @@ class Board:
 	#in fact rather a contrary
 	#TODO:rewrite
 	def backtrackTunneling(self,projectile):
-		sign_x = int(math.copysign(1,-1*projectile.v.x))
-		sign_y = int(math.copysign(1,-1*projectile.v.y))
-		x = abs(projectile.v.x)
-		y = abs(projectile.v.y)
-		#meh not well thought
 		mcm = self.game_map.collision_map
-		bounds  = self.game_map.rect
-
-		s_x = apply_bounds(0,bounds.width-1,projectile.rect.centerx)
-		s_y = apply_bounds(0,bounds.height-1,projectile.rect.centery)
-		if x == 0 :
-			xstep = 0 
-			ystep = y
-		elif y == 0 :
-			xstep = x
-			ystep = 0 
-		elif x > y:
-			xstep = abs(int(x/y * sign_x))
-			ystep = 1
-		elif y > x: 
-			ystep= abs(int(y/x*sign_y))
-			xstep = 1 
-
-		print (x,y)
-		while x > 0 and y  > 0:
-
-#			print (x,y)
-			if x > 0:
-				for i in range(0,xstep):
-					x-=1
-					if s_x +sign_x < bounds.width  and s_x+sign_x > -1  :
-						s_x+=sign_x
-
-						if ( mcm[s_x][s_y] == 0 ):
-							projectile.rect.centerx = s_x
-							projectile.rect.centery = s_y
-							return
-			if y > 0 :
-				for i in range(0,ystep):
-					y-=1
-					if s_y + sign_y < bounds.height and s_y + sign_y > -1:
-						s_y+=sign_y
-						if ( mcm[s_x][s_y] == 0 ):
-							projectile.rect.centerx = s_x
-							projectile.rect.centery = s_y
-							return
-
+		bounds = self.game_map.rect
+		line_begin_x=apply_bounds(0,bounds.width-1,projectile.rect.centerx)
+		line_begin_y =apply_bounds(0,bounds.height-1, projectile.rect.centery)
+		end_x = int(projectile.rect.centerx - projectile.v.x)
+		end_y = int(projectile.rect.centery - projectile.v.y)
+		line_end_x = apply_bounds(0,bounds.width-1,end_x)
+		line_end_y = apply_bounds(0,bounds.height-1,end_y)
+		begin = (line_begin_x, line_begin_y)
+		end = (line_end_x,line_end_y)
+		print "begin"
+		print begin
+		print "end"
+		print end
+		for x,y in calc_line(begin,end):
+			
+			if( mcm[x][y] == 0 ):
+				projectile.rect.centerx = x
+				projectile.rect.centery = y
+				return
 
 		
 	def _handleTerrainCollisions(self):

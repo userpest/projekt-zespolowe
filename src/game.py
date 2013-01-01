@@ -28,6 +28,7 @@ event_callback = EventCallback()
 crosshair = Crosshair("crosshair.png",player,event_callback)
 keyboard = KeyboardController(player,event_callback)
 event_callback.registerCallback(pygame.QUIT, quit)
+camera.trackObject(player)
 
 while 1:
 
