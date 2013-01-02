@@ -3,6 +3,7 @@ from socket import *
 from utils import *
 from game_ import *
 from player import *
+from ThreadSafeArray import *
 import select
 import time
 import json
@@ -12,49 +13,67 @@ respawn_x=0
 respawn_y=0
 
 class User:
-    id_=0
-    player=None
-    addr=(None,None)
-    def __init__(self,id_,player,addr):
-            self.id_=id_
-            self.player=player
-            self.addr=addr
-
+	def __init__(self,socket):
+		self.socket = socket
+		self.up = False
+	def setup(self, id_, player):
+		self.id_ = id_
+		self.player = player
+		self.up = True
+	def setup_obj(self,obj):
+		self.id_ = obj[0]
+		self.player = obj[1]
+		self.up = True
 
 class Server:
-    players=[]
     game=None
     port=None
     socket=None
     new_id=0
     lock=None
     def __init__(self,port,map_name,scrw,scrh):
+	self.players = ThreadSafeArray()
         self.game=Game(scrw,scrh) #
 	self.scrw=scrw
 	self.scrh=scrh
 	self.game.create(map_name)
         self.port=port
-        self.socket=CreateSocket()
+	self.socket=CreateSocketTcp()
         self.socket.bind(('127.0.0.1',self.port))
+	#
+	self.socket.listen(10)
+	#
         self.lock=Lock()
     def run(self):
-        Thread(target=Server.running,args=(self,)).start()
-            
-    def running(self):
 	self.game.start()
-        not_end=True
+	self.not_end = True
+        Thread(target=Server.listening,args=(self,)).start()
+    def listening(self):
+	while self.not_end:
+		try:
+			print 'listen for new client'
+			sock,addr = self.socket.accept()
+			print 'new client', addr
+			user=User(sock)
+			self.players.add(user)
+			Thread(target=Server.running,args=(self,user)).start()
+		except Exception as ex:
+   			print 'exception',ex
+			 
+    def running(self, user):
+	print 'begin reading msgs from client'
 	msg=""
 	size=0
 	begin=True
-        while not_end:
+        while self.not_end:
             do_read=False
             try:
-                r, _, _ = select.select([self.socket], [], [],timeout)
+                r, _, _ = select.select([user.socket], [], [],timeout)
                 do_read = bool(r)
             except error as ex:
                 return ex
             if do_read:
-                data,addr=self.socket.recvfrom(buffsize)
+                data=user.socket.recv(buffsize)
 		if begin:
 			splited = data.split(' ',1)	
 			size = int(splited[0])
@@ -68,92 +87,91 @@ class Server:
 				begin = True
 			msg = msg + data
 		if begin:
-	                self.onMessage(msg,addr)
-	self.game.end()
+		        self.onMessage(msg,user)
     def a(self):
         self.lock.acquire(True)
     def r(self):
         self.lock.release()
 
-    def onMessage(self,data,addr):
-	print data,addr
+    def onMessage(self,data,user):
+	if user.up:
+		print data,user.id_
+	else:
+		print data
 	temp=json.loads(data)
         if len(temp)==0:
             return
         if temp[0]=='I':
             self.a()
-            self.invite(temp,addr)
+            self.invite(temp,user)
             self.r()
         elif temp[0]=='S':
             self.a()
-            self.sync(temp,addr)
+            self.sync(temp,user)
             self.r()
         elif temp[0]=='E':
             self.a()
-            self.exit_(temp,addr)
+            self.exit_(temp,user)
             self.r()
         elif temp[0]=='P':
             self.a()
-            self.send_to_all(temp,addr)
+            self.send_to_all(temp,user)
             self.r()
         else:
             return
-    def invite(self,temp,addr):
+    def invite(self,temp,user):
 	msg_a=['N',respawn_x,respawn_y,respawn_angle,temp[1],temp[2],self.new_id]
         msg=json.dumps(msg_a)	
-        for pl in self.players:
-                self.send(pl.addr,msg)
-        user=User(self.new_id,Player(respawn_x,respawn_y,respawn_angle,temp[1],temp[2],self.new_id),addr)
-        self.players.append(user)
+        for pl in self.players.get_list():
+		if pl.up:
+		        self.send(pl,msg)
+	player=Player(respawn_x,respawn_y,respawn_angle,temp[1],temp[2],self.new_id)
+	self.players.action_method(User.setup_obj,user,(self.new_id,player)) #threadsafe setup a player
         self.game.join_player(user.player)
 	msg_a=['K',self.scrw,self.scrh,self.new_id,self.game.serialize(),self.get_players()]
         msg=json.dumps(msg_a)        
-	self.send(addr,msg)
+	self.send(user,msg)
         self.new_id=self.new_id+1
-    def sync(self,temp,addr):
-        self.send(addr,json.dumps(['S',self.game.serialize(),self.get_players()]))
-    def exit_(self,temp,addr):
-        i=0
-        id_=-1
-        while i<len(self.players):
-            if players[i].addr==addr:
-                id_=players[i].id_
-		user = players.pop(i)
+    def sync(self,temp,user):
+        self.send(user,json.dumps(['S',self.game.serialize(),self.get_players()]))
+
+    def exit_(self,temp,user):
+        u = self.players.pop(user)
+	if u.up:
 		self.game.remove_player(user.player)
-                break
-            i=i+1
-        msg=json.dumps(['E',id_])
-        for pl in self.players:
-            self.send(pl.addr,msg)
-    def send_to_all(self,temp,addr):            
-        for pl in self.players:
-            self.send(pl.addr,temp)
+		id_ = u.id_
+	        msg=json.dumps(['E',id_])
+        	for pl in self.players.get_list():
+	            self.send(pl,msg)
+    def send_to_all(self,temp,user):            
+        for pl in self.players.get_list():
+            self.send(pl,temp)
             if pl.id_==temp[1]:                
                 pl.player.setMoves(temp[2])
        
                 
     def get_players(self):
         players=[]		
-        for pl in self.players:
-            players.append(pl.id_)
+        for pl in self.players.get_list():
+	    if pl.up:
+	        players.append(pl.id_)
         return players
                     
-    def send(self,addr,msg):
+    def send(self,user,msg):
 	msg=str(len(msg))+" "+msg
-	print "to send: ", len(msg)
 	chunks=self.chunks(msg,1024)
-	print len(chunks), len(chunks)*1024
-	i=len(chunks)
 	for chunk in chunks:
-		f=open('q.txt','a')
-		f.write("sending "+ str(i) + " chunk")
-		#print "sending ",i ,"chunk"
-		i=i-1
-		self.socket.sendto(str(i)+' '+chunk,addr)
-	f.close()
+		try:
+			user.socket.send(chunk)
+		except Exception as ex:
+			print 'Exception', ex, 'during sending'
     def quit_full(self):
-	for pl in self.players:
-	    self.send(pl.addr,'Q')
+	for pl in self.players.get_list():
+	    try:
+		self.send(pl,json.dumps(['Q']))
+	        pl.socket.close()
+	    except Exception as ex:
+		print ex, 'during quit'
 	self.socket.close()
 	self.not_end=False
 	self.game.end()
@@ -167,7 +185,7 @@ class Server:
 		splited.append(s[start:start+n])
 	return splited
 
-server=Server(16666,"map.png",800,600)
+server=Server(16662,"map.png",800,600)
 server.run()
 print("Running")
 time.sleep(60)

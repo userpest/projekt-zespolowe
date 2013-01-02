@@ -80,7 +80,8 @@ class Game:
 	def serialize(self):
 		return pickle.dumps(self.engine)
 
-
+	def getPlayer(self,id_):
+		return self.engine.getObjectByID(id_)
 
 
 """

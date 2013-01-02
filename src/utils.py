@@ -13,7 +13,9 @@ def CreateSocket():
     sock=socket(AF_INET,SOCK_DGRAM)
     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     return sock
-
+def CreateSocketTcp():
+	sock=socket(AF_INET,SOCK_STREAM)
+	return sock	
 def patch_copy_reg():
 	copy_reg.pickle(pygame.Surface,__dumps_surface,__loads_surface)	
 	#copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)

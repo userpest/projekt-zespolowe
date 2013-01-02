@@ -2,6 +2,7 @@ from threading import *
 from socket import *
 from utils import *
 from player import *
+from game_ import *
 import json
 import select
 
@@ -15,28 +16,33 @@ class Client:
 	
 	def __init__(self,addr,img,imgc,ch):		
 		self.addr=addr
-		self.socket=CreateSocket()
+		self.socket=CreateSocketTcp()
 		self.img=img
 		self.imgc=imgc
 		self.ch=ch
 	def run(self):
+		try:
+			self.socket.connect(self.addr)
+		except:
+			print "Error. Unable to connect to server"
+			return 1
         	Thread(target=Client.running,args=(self,)).start()
 		self.invite()
 	def send(self,addr,msg):
-	        self.socket.sendto(msg,addr)
+	        self.socket.send(msg)
 	def quit_(self):
         	self.not_end=False
 		self.send_exit()
-		self.socket.close()
+		try:
+			self.socket.close()
+		except:
+			pass
 		self.game.end()
 	def running(self):
-		print "a"
 	        not_end=True
 	        msg=""
 	        size=0
 	        begin=True
-		last_id=0
-		ct=0
 	        while not_end:
 	            do_read=False
 	            try:
@@ -45,50 +51,45 @@ class Client:
 	            except error as ex:
 	                return ex
 	            if do_read:
-	                data,addr=self.socket.recvfrom(buffsize)
+	                data=self.socket.recv(buffsize)
+			#print data
 	                if begin:
-	                        splited = data.split(' ',2)
-				last_id = int(splited[0])
-	                        size = int(splited[1])
-	                        size = size - len(splited[2])
+	                        splited = data.split(' ',1)
+	                        size = int(splited[0])
+	                        size = size - len(splited[1])
 	                        if size != 0:
 	                                begin = False
 	                        msg = splited[1]
 	                else:
-				splited = data.split(' ',1)
-				id_=int(splited[0])
-				if id_!=last_id-1:
-					#print id_, last_id
-					ct=ct+1
-					print ct
-	                        size = size - len(splited[1])
+	                        size = size - len(data)
 	                        if size == 0:
 	                                begin = True
 	                        msg = msg + data
-			print size
 	                if begin:
-	                        self.onMessage(msg,addr)
+				if len(msg) < 1000:
+					print msg
+	                        self.onMessage(msg)
 		if self.game != None:
 			self.game.end()	
-	def onMessage(self,data,addr):
-		print data, addr
+	def onMessage(self,data):
+		#print data
         	temp=json.loads(data)
 	        if len(temp)==0:
 			return
 		if temp[0]=='K':
 			self.id_=temp[3]
-			self.game=Game(temp[1],temp[2],ch_img=self.ch,my_id=self.id)
+			self.game=Game(temp[1],temp[2],ch_img=self.ch,my_id=self.id_)
 			self.game.load(temp[4]) #loads starts game
 			self.game.set_player_owner(self.id_,self.ch)
 	        	for id_n in temp[5]:
-		        	self.players.append(self.game.getObjectById(id_n))
+		        	self.players.append(self.game.getPlayer(id_n))
 	        elif temp[0]=='S':
 			self.game.end()
 			self.game=Game(temp[1])
 			self.game.set_player_owner(self.id_,self.ch)
 			self.players=[]
 			for id_n in temp[2]:
-				self.players.append(self.game.getObjectById(id_n))
+				self.players.append(self.game.getPlayer(id_n))
 		elif temp[0]=='N':	
 			player=Player(temp[1],temp[2],temp[3],temp[4],temp[5],temp[6])
 			self.players.append(player)
@@ -107,7 +108,9 @@ class Client:
 					player = self.players.pop(i)
 					self.game.remove_player(player)		
 					i=i+1
-	
+		elif temp[0]=='Q':
+			self.not_end = False
+			self.game.end()	
 	def send_invite(self,img_name,collsion_map_name):
 		self.send(json.dumps(['I',img_name,collsion_map_name]))
 	def send_sync(self):
@@ -119,7 +122,7 @@ class Client:
 	def send(self,msg):
 		msg=str(len(msg))+" "+msg
 		for chunk in self.chunks(msg,1024):
-			self.socket.sendto(chunk,self.addr)
+			self.socket.send(chunk)
 	def chunks(self,s, n):
 		splitted=[]
 		for start in range(0,len(s),n):
@@ -129,7 +132,7 @@ class Client:
 		self.send_invite(self.img,self.imgc)
 
 
-client = Client(('127.0.0.1',16666),"hero.png","hero.png","crosshair.png")
+client = Client(('127.0.0.1',16662),"hero.png","hero.png","crosshair.png")
 client.run()
 
 import time
