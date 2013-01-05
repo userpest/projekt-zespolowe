@@ -125,7 +125,9 @@ class Player(PhysicalObject):
 
 	def setMoves(self,data):
 		d = pickle.loads(data)
-		self.moves.frombytes(data[0])
+		hack  = bitarray()
+		hack.frombytes(data[0])
+		self.moves = hack
 		self.weaponnum = data[1]
 		self.setWeapon(self.weaponnum)
 		self.weapon.fire=self.moves[self.firei]
