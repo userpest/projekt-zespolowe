@@ -6,7 +6,7 @@ class Camera:
 		self.track=False
 		self.objects = []
 
-	def track(self,tracked):
+	def trackObject(self,tracked):
 		self.track = True
 		self.tracked = weakref.proxy(tracked)
 
@@ -92,21 +92,22 @@ camera = Camera()
 
 class CameraObject(object):
 
-	def __init__(self,img,real_coords_rect):
+	def __init__(self,img,real_coords_rect,visible = True):
 		self.real_coords_rect = real_coords_rect
 		self.camerapos=pygame.Rect(0,0,real_coords_rect.width,real_coords_rect.height)
 		self.img = img
 		self.unregister = False
 		global camera
 		camera.register(self)
-
+		self.visible = visible
 	def show(self):
-		r = self.camerapos
-		real_coords_rect = self.real_coords_rect
-		r.centerx = real_coords_rect.centerx - self.screen_rect.x
-		r.centery = real_coords_rect.centery - self.screen_rect.y
-		if ( r.right > 0 and r.left < self.screen_rect.width and r.bottom > 0 and r.top < self.screen_rect.height): 
-			self.screen.blit(self.img,r)
+		if self.visible:
+			r = self.camerapos
+			real_coords_rect = self.real_coords_rect
+			r.centerx = real_coords_rect.centerx - self.screen_rect.x
+			r.centery = real_coords_rect.centery - self.screen_rect.y
+			if ( r.right > 0 and r.left < self.screen_rect.width and r.bottom > 0 and r.top < self.screen_rect.height): 
+				self.screen.blit(self.img,r)
 
 	def registerScreen(self, screen,screen_rect):
 		self.screen = screen

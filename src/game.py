@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 import pygame
 from player import *
@@ -28,6 +28,7 @@ event_callback = EventCallback()
 crosshair = Crosshair("crosshair.png",player,event_callback)
 keyboard = KeyboardController(player,event_callback)
 event_callback.registerCallback(pygame.QUIT, quit)
+camera.trackObject(player)
 
 while 1:
 
@@ -38,4 +39,4 @@ while 1:
 	crosshair.show()
 	pygame.display.flip()
 
-	pygame.time.wait(50)
+	pygame.time.wait(16)

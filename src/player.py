@@ -27,17 +27,19 @@ class Player(PhysicalObject):
 
 		self.img = img
 		self.angle=angle
-		self.leftv = Vector2D(x=-2,y=0)
-		self.rightv = Vector2D(x=2,y=0)
-		self.jumpv = Vector2D(x=0,y=-40)
-		self.jetv = Vector2D(x=0,y=-20)
+		self.leftv = Vector2D(x=-0.1,y=0)
+		self.rightv = Vector2D(x=0.1,y=0)
+		self.jumpv = Vector2D(x=0,y=-5)
+		self.jetv = Vector2D(x=0,y=-0.2)
 		self.xlimit = 5
 		self.ylimit = 10
 		self.ground = False
 		self.friction = 0.02
 		self.weapons = [None]*3
 		self.weapons[0]=AK47()
-		self.weapon = self.weapons[0]
+		self.weapons[0].visible=False
+		self.weapons[1] = TestWeapon()
+		self.weapon = self.weapons[1]
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 		self.weaponnum = 0
 	def setWeapon(self,num):
@@ -123,7 +125,9 @@ class Player(PhysicalObject):
 
 	def setMoves(self,data):
 		data = pickle.loads(data)
-		self.moves.frombytes(data[0])
+		hack  = bitarray()
+		hack.frombytes(data[0])
+		self.moves = hack
 		self.weaponnum = data[1]
 		self.setWeapon(self.weaponnum)
 		self.weapon.fire=self.moves[self.firei]
