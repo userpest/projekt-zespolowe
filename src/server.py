@@ -33,7 +33,7 @@ class Server:
     lock=None
     def __init__(self,port,map_name,scrw,scrh):
 	self.players = ThreadSafeArray()
-        self.game=Game(scrw,scrh) #
+        self.game=Game(scrw,scrh,Server.executeFrap,self,True) #
 	self.scrw=scrw
 	self.scrh=scrh
 	self.game.create(map_name)
@@ -44,6 +44,9 @@ class Server:
 	self.socket.listen(10)
 	#
         self.lock=Lock()
+	self.lock_messages = Lock()
+	self.messages = ['P',[]]
+	self.w84join_response = 0
     def run(self):
 	self.game.start()
 	self.not_end = True
@@ -115,11 +118,26 @@ class Server:
             self.r()
         elif temp[0]=='P':
             self.a()
-            self.send_to_all(temp,user)
+            #self.send_to_all(temp,user)
+	    self.createPack(temp,user)
             self.r()
+	elif temp[0]=='J':
+	    self.w84join_response = self.w84join_response - 1
         else:
             return
+    def executeFrap(self):
+	if self.w84join_response > 0: #should be counter (connection timeout)
+		return False
+	else:
+		self.sendPackage()
+		return True
+    def createPack(self,temp,user):
+	self.lock_messages.acquire(True)
+	self.messages[1].append(temp[1:])
+	self.lock_messages.release()
+   
     def invite(self,temp,user):
+	self.w84join_response = self.w84join_response + 1
 	msg_a=['N',respawn_x,respawn_y,respawn_angle,temp[1],temp[2],self.new_id]
         msg=json.dumps(msg_a)	
         for pl in self.players.get_list():
@@ -148,8 +166,23 @@ class Server:
             self.send(pl,temp)
             if pl.id_==temp[1]:                
                 pl.player.setMoves(temp[2])
-       
-                
+    def sendPackage(self):
+	self.lock_messages.acquire(True)
+	#if len(self.messages[1]) == 0:
+	#	self.lock_messages.release()
+	#	return
+	for pair in self.messages[1]:
+		for pl in self.players.get_list():
+			if pl.id_ == pair[0]:
+				print 'update', pl.id_, 'using:', pair[1]
+				pl.player.setMoves(pair[1])
+				break
+	msg = json.dumps(self.messages)
+	self.messages[1] = []
+	self.lock_messages.release()
+        for pl in self.players.get_list():
+		self.send(pl,msg)
+
     def get_players(self):
         players=[]		
         for pl in self.players.get_list():
@@ -158,6 +191,8 @@ class Server:
         return players
                     
     def send(self,user,msg):
+	if len(msg)<1000:
+		print user.id_,msg
 	msg=str(len(msg))+" "+msg
 	chunks=self.chunks(msg,1024)
 	for chunk in chunks:
@@ -185,7 +220,7 @@ class Server:
 		splited.append(s[start:start+n])
 	return splited
 
-server=Server(16662,"map.png",800,600)
+server=Server(16669,"map.png",800,600)
 server.run()
 print("Running")
 time.sleep(60)

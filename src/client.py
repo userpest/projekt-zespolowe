@@ -20,6 +20,8 @@ class Client:
 		self.img=img
 		self.imgc=imgc
 		self.ch=ch
+		self.lock_messages=Lock()
+		self.messages = []
 	def run(self):
 		try:
 			self.socket.connect(self.addr)
@@ -52,8 +54,9 @@ class Client:
 	                return ex
 	            if do_read:
 	                data=self.socket.recv(buffsize)
-			#print data
 	                if begin:
+				if data == '':
+					continue
 	                        splited = data.split(' ',1)
 	                        size = int(splited[0])
 	                        size = size - len(splited[1])
@@ -68,39 +71,67 @@ class Client:
 	                if begin:
 				if len(msg) < 1000:
 					print msg
-	                        self.onMessage(msg)
+	                        self.msgRecived(msg)
+				#onMessage(msg)
 		if self.game != None:
 			self.game.end()	
-	def onMessage(self,data):
-		#print data
-        	temp=json.loads(data)
-	        if len(temp)==0:
+	def msgRecived(self,data):
+		temp=json.loads(data)
+		if len(temp) == 0:
 			return
-		if temp[0]=='K':
+		if temp[0] == 'K': #after reciving game
 			self.id_=temp[3]
-			self.game=Game(temp[1],temp[2],ch_img=self.ch,my_id=self.id_)
-			self.game.load(temp[4]) #loads starts game
+			self.game = Game(temp[1],temp[2],Client.ExecuteMessages,self,False,ch_img=self.ch,my_id=self.id_)
+			self.game.load(temp[4])
 			self.game.set_player_owner(self.id_,self.ch)
-	        	for id_n in temp[5]:
-		        	self.players.append(self.game.getPlayer(id_n))
-	        elif temp[0]=='S':
+			self.player = self.game.getPlayer(self.id_)
+			for id_n in temp[5]:
+				self.players.append(self.game.getPlayer(id_n))
+			self.send(json.dumps(['J']))	# send joined
+		elif temp[0] == 'Q':
+			print 'Exit'
+			self.not_end = False
+			self.game.end()
+		else:
+			self.lock_messages.acquire(True)
+			self.messages.append(temp)
+			self.lock_messages.release()
+	def ExecuteMessages(self):
+		if len(self.messages) == 0:
+			return False
+		self.lock_messages.acquire(True)
+		message = self.messages.pop(0)
+		to_return = self.onMessage(message)
+		if to_return:
+			move = self.player.getMoves()
+			print 'geting move', move
+			self.send_move(self.player.getMoves())
+		self.lock_messages.release()
+		return to_return
+	def onMessage(self,temp):
+		#print data
+	        """
+			elif temp[0]=='S':
 			self.game.end()
 			self.game=Game(temp[1])
 			self.game.set_player_owner(self.id_,self.ch)
 			self.players=[]
 			for id_n in temp[2]:
 				self.players.append(self.game.getPlayer(id_n))
-		elif temp[0]=='N':	
+		"""
+		if temp[0]=='N':	
 			player=Player(temp[1],temp[2],temp[3],temp[4],temp[5],temp[6])
 			self.players.append(player)
 			self.game.join_player(player)
 		elif temp[0]=='P':
-			if temp[1]==self.id_:
-				return
-			for p in self.players:
-				if p.id_ == temp[1]:
-					p.setMoves(temp[2])
-					break
+			for pair in temp[1]:
+				if pair[0] != self.id_:
+					for p in self.players:
+						if p.id_ == pair[0]:
+							p.setMoves(pair[1])
+							break
+
+			return True
 		elif temp[0]=='E':
 			i=0
 			while i<len(self.players):
@@ -111,6 +142,7 @@ class Client:
 		elif temp[0]=='Q':
 			self.not_end = False
 			self.game.end()	
+		return False
 	def send_invite(self,img_name,collsion_map_name):
 		self.send(json.dumps(['I',img_name,collsion_map_name]))
 	def send_sync(self):
@@ -132,7 +164,7 @@ class Client:
 		self.send_invite(self.img,self.imgc)
 
 
-client = Client(('127.0.0.1',16662),"hero.png","hero.png","crosshair.png")
+client = Client(('127.0.0.1',16669),"hero.png","hero.png","crosshair.png")
 client.run()
 
 import time

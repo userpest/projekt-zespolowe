@@ -122,7 +122,7 @@ class Player(PhysicalObject):
 		return pickle.dumps([self.moves.tobytes(),self.weaponnum,self.weapon.angle])
 
 	def setMoves(self,data):
-		d = pickle.loads(data)
+		data = pickle.loads(data)
 		self.moves.frombytes(data[0])
 		self.weaponnum = data[1]
 		self.setWeapon(self.weaponnum)

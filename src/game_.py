@@ -16,7 +16,7 @@ def quit(event):
 	sys.exit(1)
 
 class Game:
-	def __init__(self,scrw,scrh,ch_img=None,my_id=-1):
+	def __init__(self,scrw,scrh,function,obj_self,enable_fraping,ch_img=None,my_id=-1):
 		utils.patch_copy_reg()	
 		self.my_id = my_id
 		self.screen = pygame.display.set_mode((scrw,scrh))
@@ -25,8 +25,11 @@ class Game:
 		self.event_callback.registerCallback(pygame.QUIT, quit)
 		self.crosshair = None
 		self.loaded = False
-		self.ch_img=ch_img
+		self.ch_img = ch_img
+		self.obj_self = obj_self
+		self.function = function
 		self.running = False
+		self.enable_fraping = enable_fraping
 	def create(self,map_name):
 		self.game_map = GameMap(map_name)
 		self.engine = Board(self.game_map)
@@ -50,15 +53,17 @@ class Game:
 		self.not_end = True
 		self.running = True
 		while self.not_end:
-			self.event_callback.processEvents()
-			if self.crosshair!=None:
-				self.crosshair.epoch()
-			self.engine.epoch()
-			camera.show()
-			if self.crosshair!=None:
-				 self.crosshair.show()
-			pygame.display.flip()
-			pygame.time.wait(1000)
+			if self.function(self.obj_self):
+				self.event_callback.processEvents()
+				if self.crosshair!=None:
+					self.crosshair.epoch()
+				self.engine.epoch()
+				camera.show()
+				if self.crosshair!=None:
+					self.crosshair.show()
+				pygame.display.flip()
+				if self.enable_fraping: #mozna przerobic zeby client tez czekal kilka ms zeby nie bylo szybkiej petli while true
+					pygame.time.wait(1000)
 		self.running = False
 	def start(self,new_thread = True):
 		if new_thread:
