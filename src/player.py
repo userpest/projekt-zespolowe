@@ -43,13 +43,15 @@ class Player(PhysicalObject):
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 		self.weaponnum = 0
 	def setWeapon(self,num):
-			self.weaponnum = num
-			self.unattach(self.weapon)
-			self.weapon = self.weapons[num]
-			self.attach(self.weapon, 0, 0)
+		angle = self.weapon.angle
+		self.weaponnum = num
+		self.unattach(self.weapon)
+		self.weapon = self.weapons[num]
+		self.weapon.setAngle(angle)
+		self.attach(self.weapon, 0, 0)
 
 	def handleTerrainImpact(self):
-			self.ground = True
+		self.ground = True
 
 
 	def setAngle(self,angle):
@@ -131,4 +133,4 @@ class Player(PhysicalObject):
 		self.weaponnum = data[1]
 		self.setWeapon(self.weaponnum)
 		self.weapon.fire=self.moves[self.firei]
-		self.weapon.angle = data[2]
+		self.weapon.setAngle(data[2])
