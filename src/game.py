@@ -19,10 +19,13 @@ screen = pygame.display.set_mode((800, 600))
 camera.setScreen()
 
 player = Player(0,0,0,"hero.png", "hero.png")
+dummy = Player(10,20,0,"hero.png", "hero.png")
+
 gm = GameMap("map.png")
 engine = Board(gm)
 camera.registerMap(gm)
 engine.registerPlayer(player)
+engine.registerPlayer(dummy)
 
 event_callback = EventCallback()
 crosshair = Crosshair("crosshair.png",player,event_callback)

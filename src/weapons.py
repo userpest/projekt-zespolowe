@@ -5,13 +5,19 @@ from math import *
 import resourcemanager
 import os
 
-class Ak47Bullet(PhysicalObject):
-	def __init__(self,visible):
+class Projectile(PhysicalObject):
+	def __init__(self,dmg,owner,x,y,collision_map,img):
+		PhysicalObject.__init__(self,x,y,collision_map,img)
+		self.dmg = dmg
+		self.owner = owner
+
+class Ak47Bullet(Projectile):
+	def __init__(self,owner,visible=True):
 		img = resourcemanager.get_image(os.path.join('img','weapons','ak47','bullet.png'))
 		cm = resourcemanager.get_image(os.path.join('img','weapons','ak47','bullet_collision_map.png'))
 		img.set_colorkey(Color("Black"))
 		cm.set_colorkey(Color("Red"))
-		PhysicalObject.__init__(self,0,0,cm,img)
+		Projectile.__init__(self,10,owner,0,0,cm,img)
 		self.damage=10
 	def die(self):
 		self.unregister=True
@@ -24,7 +30,7 @@ class Ak47Bullet(PhysicalObject):
 #this can make the weapons loadable from config
 class Weapon(AttachableObject):
 
-	def __init__(self,attachx, attachy, ammo,ammo_count, exit_r, exit_speed,img_left,img_right,visible = 1 , projectiles_per_round = 1, cooldown = 0, colorkey = Color("Black")):
+	def __init__(self,owner,attachx, attachy, ammo,ammo_count, exit_r, exit_speed,img_left,img_right,visible = 1 , projectiles_per_round = 1, cooldown = 0, colorkey = Color("Black")):
 		"""img should be given for the rotation of 0 degree (as in polar coordinate system just replace radians with degrees ;x) """
 		self.img = resourcemanager.get_image(img_right,colorkey=Color("White"))
 		AttachableObject.__init__(self,attachx,attachy,self.img,visible)
@@ -43,6 +49,7 @@ class Weapon(AttachableObject):
 		self.projectiles_per_round= projectiles_per_round
 		self.radius = exit_r
 		self.current_outx, self.current_outy  = self.calc_exit_coords(0)
+		self.owner = owner
 
 		self.imgs =[0]*360
 
@@ -110,23 +117,23 @@ class Weapon(AttachableObject):
 	def shot(self):
 		pass
 class AK47(Weapon):
-	def __init__(self,visible=True):
+	def __init__(self,owner,visible=True):
 		self.visible=visible
 		img_dir=os.path.join('img','weapons','ak47')
 		img_left = os.path.join(img_dir,'ak47_left.png')
 		img_right = os.path.join(img_dir, 'ak47_right.png')
-		Weapon.__init__(self,0,0,self.shot,100,20,17,img_left,img_right,cooldown=1,colorkey=Color("White"))
+		Weapon.__init__(self,owner,0,0,self.shot,100,20,17,img_left,img_right,cooldown=1,colorkey=Color("White"))
 	def shot(self):
 		return Ak47Bullet(self.visible)
 
 class TestWeapon(AK47):
-	def __init__(self,visible=True):
+	def __init__(self,owner,visible=True):
 		self.visible=visible
 		img_dir=os.path.join('img','weapons','test')
 		img_left = os.path.join(img_dir,'test_left.png')
 		img_right = os.path.join(img_dir, 'test_right.png')
-		Weapon.__init__(self,0,0,self.shot,100,20,17,img_left,img_right,cooldown=10,colorkey=Color("White"))
+		Weapon.__init__(self,owner,0,0,self.shot,100,20,17,img_left,img_right,cooldown=10,colorkey=Color("White"))
 	def shot(self):
-		return Ak47Bullet(self.visible)
+		return Ak47Bullet(self.owner,self.visible)
 
 

@@ -130,7 +130,7 @@ class Board:
 	def _handleObjectCollisions(self):
 		for i in self.objects:
 			for j in self.objects:
-				if self._objectsCollide(i,j):
+				if i != j and self._objectsCollide(i,j):
 					i.addCollision(j)
 
 	#prevents tunnelling in the destructible terrain
@@ -148,10 +148,7 @@ class Board:
 		line_end_y = apply_bounds(0,bounds.height-1,end_y)
 		begin = (line_begin_x, line_begin_y)
 		end = (line_end_x,line_end_y)
-		print "begin"
-		print begin
-		print "end"
-		print end
+
 		for x,y in calc_line(begin,end):
 			
 			if( mcm[x][y] == 0 ):
@@ -316,15 +313,16 @@ class Board:
 		cm1 = obj1.collision_map
 		cm2 = obj2.collision_map
 
-		x1 = r1.x-overlap.x	
-		y1 = r1.y - overlap.y
+		x1 = overlap.x	-r1.x
+		y1 = overlap.y - r1.y 
 
-		x2 = r2.x-overlap.x 
-		y2 = r2.y - overlap.y
+		x2 = overlap.x- r2.x
+		y2 = overlap.y - r2.y
 
 		for y in range(0,overlap.height):
 			for x in range(0,overlap.width):
 				if cm1[x+x1][y+y1] & cm2[x+x2][y+y2]:
+					print "collision"
 					return True
 
 		return False
@@ -394,7 +392,7 @@ class PhysicalObject(BoardObject):
 	def __init__(self,x,y,collision_map, img,visible=1,mass=1,v=Vector2D(), obj_id = None):
 
 		BoardObject.__init__(self,x,y,v,img,visible, obj_id)
-
+		self.dmg = 0 
 		self.forgotteny=0
 		self.forgottenx=0
 		self.mass=mass
@@ -406,6 +404,7 @@ class PhysicalObject(BoardObject):
 
 		self.v = Vector2D() 
 		self.attached = []
+		self.collisions = [] 
 
 	def setCollisionMap(self, collision_map):
 
@@ -441,6 +440,15 @@ class PhysicalObject(BoardObject):
 		else:
 			self.v.x+=friction
 
+	def epoch(self):
+		for i in self.collisions:
+			self.handleCollision(i)
+
+		self.collisions = [] 
+
+	def handleCollision(self,obj):
+		pass
+
 	def applyForce(self,f):
 		"""self explanatory"""
 		self.force+=f
@@ -451,7 +459,7 @@ class PhysicalObject(BoardObject):
 		self.force.y=0
 
 	def addCollision(self,obj):
-		return
+		self.collisions.append(obj)
 
 
 	def attach(self,obj,x,y):

@@ -10,13 +10,15 @@ import resourcemanager
 
 #if you want the entire class for resync pickle the entire fucker for satan
 class Player(PhysicalObject):
-	def __init__(self,x,y,angle, img_name, collision_map_name,obj_id = None, visible=True):
+	def __init__(self,x,y,angle, img_name, collision_map_name,obj_id = None, visible=True, respawn_timer = 200):
 		img_name = os.path.join('img',img_name)
 		collision_map_name = os.path.join('img',collision_map_name)
 
 		img = resourcemanager.get_image(img_name)
 		cm =  resourcemanager.get_image(collision_map_name) 
 		PhysicalObject.__init__(self,x,y,cm,img,mass = 1 , visible=visible,obj_id=obj_id)
+
+		self.respawn_timer = respawn_timer
 
 		self.moves = bitarray([False]*5)
 		self.lefti = 0
@@ -35,13 +37,34 @@ class Player(PhysicalObject):
 		self.ylimit = 10
 		self.ground = False
 		self.friction = 0.02
+		self.kills = 0 
+		self.deaths = 0 
+		self.weaponnum = 0
+		self.spawn()
+
+	def spawn(self):
+		self.hp = 100
 		self.weapons = [None]*3
-		self.weapons[0]=AK47()
+		self.weapons[0]=AK47(self)
 		self.weapons[0].visible=False
-		self.weapons[1] = TestWeapon()
+		self.weapons[1] = TestWeapon(self)
 		self.weapon = self.weapons[1]
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
-		self.weaponnum = 0
+
+
+	def handleCollision(self,obj):
+
+		self.hp -= obj.dmg
+		if self.hp < 0:
+			self.unregister=True
+
+			if obj != self:
+				obj.owner.kills+=1
+			else
+				self.kills-=1
+
+			self.deaths+=1
+
 	def setWeapon(self,num):
 		angle = self.weapon.angle
 		self.weaponnum = num
@@ -60,6 +83,7 @@ class Player(PhysicalObject):
 
 
 	def epoch(self):
+		PhysicalObject.epoch(self)
 		if self.left:
 			self.moveLeft()
 
