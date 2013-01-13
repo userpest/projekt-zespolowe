@@ -7,7 +7,7 @@ import os
 import  resourcemanager
 
 #TODO: add different movement speeds
-class Crosshair:
+class Crosshair(object):
 	def __init__(self, img_name,player, event_callback):
 
 		self.screen = pygame.display.get_surface()

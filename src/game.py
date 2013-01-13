@@ -21,7 +21,7 @@ camera.setScreen()
 player = Player(0,0,0,"hero.png", "hero.png")
 dummy = Player(10,20,0,"hero.png", "hero.png")
 
-gm = GameMap("map.png")
+gm = GameMap("bigmap.png")
 engine = Board(gm)
 camera.registerMap(gm)
 engine.registerPlayer(player)

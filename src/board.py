@@ -12,7 +12,7 @@ def apply_bounds(minimal, maximal, value):
 	value = max (minimal,value)
 	return value
 
-class GameMap:
+class GameMap(object):
 	def __init__(self,name):
 		self.load(name)
 
@@ -54,7 +54,7 @@ class GameMap:
 	def show(self):
 		self.screen.blit(self.game_map,Rect(0,0,0,0), area=self.screen_rect)
 
-class Board:
+class Board(object):
 	def __init__(self,game_map):
 		self.game_map = game_map
 		self.players =  [] 
@@ -82,6 +82,10 @@ class Board:
 
 		for i in self.players:
 			i.epoch()
+			if i.respawn:
+				i.respawn_time-=1
+				if i.respawn_time == 0 :
+					self.respawnPlayer(i)
 
 			for j in i.emit():
 				self._addEmittedProjectile(j,i)
@@ -89,6 +93,11 @@ class Board:
 			if i.unregister:
 				self.unregisterPlayer(i)
 
+	def respawnPlayer(self,p):
+		p.v = Vector2D(0,0)
+		p.rect.x = 10
+		p.rect.y= 20
+		p.respawnPlayer()
 	def registerPlayer(self, obj):
 		self._addID(obj)
 		self.players.append(obj)
@@ -160,9 +169,9 @@ class Board:
 	def _handleTerrainCollisions(self):
 		for i in self.projectiles:
 			if i.movable and self._terrainCollision(i):
+				i.handleTerrainImpact()
 				self.backtrackTunneling(i)
 				self.game_map.processProjectile(i)	
-				i.handleTerrainImpact()
 
 
 	def _handleMovement(self):
@@ -185,10 +194,11 @@ class Board:
 	def _handleProjectileMovement(self):
 
 		for i in self.projectiles:
-			i.v+=self.gravity
-			r = i.rect
-			r.x +=int(i.v.x)
-			r.y += int(i.v.y)
+			if i.movable:
+				i.v+=self.gravity
+				r = i.rect
+				r.x +=int(i.v.x)
+				r.y += int(i.v.y)
 
 	def _addEmittedProjectile(self,projectile,parent):
 			projectile.v+=parent.v
@@ -199,6 +209,9 @@ class Board:
 	#mess
 	def _handlePlayerMovement(self):
 		for i in self.players:
+			if not i.movable:
+				continue
+
 			i.handleForce()
 			i.v+=self.gravity
 			pixelx = i.rect.centerx
@@ -322,7 +335,6 @@ class Board:
 		for y in range(0,overlap.height):
 			for x in range(0,overlap.width):
 				if cm1[x+x1][y+y1] & cm2[x+x2][y+y2]:
-					print "collision"
 					return True
 
 		return False
@@ -360,14 +372,14 @@ class Board:
 class BoardObject(CameraObject):
 	def __init__(self,x,y,v,img, visible=True,obj_id = None):
 
-		self.rect=img.get_rect()
-		self.rect.x = x
-		self.rect.y=y
+		rect=img.get_rect()
+		rect.x = x
+		rect.y=y
 		self.v = v
 		self.force = Vector2D()
 		self.obj_id = obj_id
 
-		CameraObject.__init__(self, img,self.rect,visible)
+		CameraObject.__init__(self, img,rect,visible)
 
 	def emit(self):
 		"""return a list of emitted projectiles"""
@@ -408,11 +420,11 @@ class PhysicalObject(BoardObject):
 
 	def setCollisionMap(self, collision_map):
 
+		self.cm = collision_map
 		tmprect = collision_map.get_rect()
-		tmprect.x = self.rect.x
-		tmprect.y = self.rect.y
+		tmprect.centerx = self.rect.centerx
+		tmprect.centery = self.rect.centery
 		self.rect = tmprect
-		self.real_coords_rect = tmprect
 		self.collision_map = surfarray.array_colorkey(collision_map)
 
 	def handleObjectImpact(self):

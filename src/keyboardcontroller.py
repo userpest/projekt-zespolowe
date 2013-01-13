@@ -1,6 +1,6 @@
 import pygame
 
-class KeyboardController:
+class KeyboardController(object):
 	#TODO: maybe parse some config
 	def __init__(self,player,event_callback):
 		self.player= player

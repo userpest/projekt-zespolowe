@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import pygame
 import weakref
-class Camera:
+class Camera(object):
 	def __init__(self):
 		self.track=False
 		self.objects = []
@@ -71,7 +71,7 @@ class Camera:
 		self.game_map.show()
 
 		if self.track:
-			tracked = self.tracked.real_coords_rect
+			tracked = self.tracked.rect
 			self.lookAt(tracked.centerx,tracked.centery)
 
 		for i in self.objects:
@@ -92,9 +92,9 @@ camera = Camera()
 
 class CameraObject(object):
 
-	def __init__(self,img,real_coords_rect,visible = True):
-		self.real_coords_rect = real_coords_rect
-		self.camerapos=pygame.Rect(0,0,real_coords_rect.width,real_coords_rect.height)
+	def __init__(self,img,rect,visible = True):
+		self.rect = rect
+		self.camerapos=pygame.Rect(0,0,rect.width,rect.height)
 		self.img = img
 		self.unregister = False
 		global camera
@@ -103,7 +103,7 @@ class CameraObject(object):
 	def show(self):
 		if self.visible:
 			r = self.camerapos
-			real_coords_rect = self.real_coords_rect
+			real_coords_rect = self.rect
 			r.centerx = real_coords_rect.centerx - self.screen_rect.x
 			r.centery = real_coords_rect.centery - self.screen_rect.y
 			if ( r.right > 0 and r.left < self.screen_rect.width and r.bottom > 0 and r.top < self.screen_rect.height): 

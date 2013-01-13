@@ -2,7 +2,7 @@
 
 import pygame
 
-class EventCallback:
+class EventCallback(object):
 	def __init__(self):
 		#could use a normal list for speed
 		self.callbacks = {}

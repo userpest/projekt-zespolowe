@@ -40,38 +40,56 @@ class Player(PhysicalObject):
 		self.kills = 0 
 		self.deaths = 0 
 		self.weaponnum = 0
-		self.spawn()
 
-	def spawn(self):
 		self.hp = 100
 		self.weapons = [None]*3
 		self.weapons[0]=AK47(self)
-		self.weapons[0].visible=False
 		self.weapons[1] = TestWeapon(self)
-		self.weapon = self.weapons[1]
+		self.weapons[2] = Bazooka(self)
+		self.weapon = self.weapons[2]
+		self.weapon.visible = False
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 
+		self.respawn=False
+
+	def respawnPlayer(self):
+		for i in self.weapons:
+			i.reload()
+
+		self.weapon.visible=True
+		self.collides = True
+		self.visible = True
+		self.respawn=False
+		self.movable = True
+		self.hp = 100
 
 	def handleCollision(self,obj):
 
 		self.hp -= obj.dmg
 		if self.hp < 0:
-			self.unregister=True
+			self.collides=False
+			self.weapon.visible=False
+			self.visible = False
+			self.respawn = True
+			self.movable = False
+			self.respawn_time = self.respawn_timer
 
 			if obj != self:
 				obj.owner.kills+=1
-			else
+			else:
 				self.kills-=1
-
+			self.weapon.fire=False
 			self.deaths+=1
 
 	def setWeapon(self,num):
 		angle = self.weapon.angle
 		self.weaponnum = num
+		self.weapon.visible=False
 		self.unattach(self.weapon)
 		self.weapon = self.weapons[num]
+		self.weapon.visible=True
 		self.weapon.setAngle(angle)
-		self.attach(self.weapon, 0, 0)
+		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 
 	def handleTerrainImpact(self):
 		self.ground = True
@@ -143,8 +161,9 @@ class Player(PhysicalObject):
 		return self.moves[self.firei]
 	@fire.setter
 	def fire(self,v):
-		self.moves[self.firei]=v
-		self.weapon.fire=v
+		if not self.respawn:
+			self.moves[self.firei]=v
+			self.weapon.fire=v
 
 	def getMoves(self):
 		return pickle.dumps([self.moves.tobytes(),self.weaponnum,self.weapon.angle])

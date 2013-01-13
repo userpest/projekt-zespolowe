@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import math
-class Vector2D:
+class Vector2D(object):
 
 	#gief overloading
 	def __init__(self,lenght=0, angle=0,x=0,y=0):
