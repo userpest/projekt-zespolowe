@@ -1,0 +1,5 @@
+Jakub Kuras:
+-instalacja srodowiska uruchomieniowego dla gry
+-scalanie kodu sieciowego i gry
+
+5h
