@@ -1,0 +1,14 @@
+Micha³ Antoñczak:
+-dodanie do engine'u metod umozliwiajacych synchronizacje stanu gry przez siec
+0h
+
+Ca³kowity czas pracy: 26h
+
+Jakub Kuraœ:
+
+-napisanie kodu klienta
+-zmiana dzialania serwera
+-debugowanie
+5h
+
+Ca³kowity czas pracy:  20h

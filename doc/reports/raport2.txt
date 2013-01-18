@@ -1,0 +1,19 @@
+
+Jakub Kuras:
+-Projektowanie komunikacji internetowej
+-Komunikacja internetowa
+-Server
+
+czas: 15h
+
+Michał Antończak:
+-kolizje
+-czesciowo fizyka
+-kamera 
+-sterowanie
+-manager zasobow
+-wektory
+-rozpoczecie pisania broni
+-grafika broni
+
+czas : 24h

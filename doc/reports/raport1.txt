@@ -1,0 +1,23 @@
+Temat:Bitmapowy engine do gry dwuwymiarowej 
+
+Planujemy napisac gre podobna do Liero z dodana mozliwoscia gry wieloosobowej przez siec.
+
+Czlonkowie zespołu:
+Michał Antończak(Lider), Jakub Kuraś
+
+Podzial pracy:
+
+	-Michał Antończak: 
+		-engine
+
+	-Jakub Kuraś:
+		-UI
+		-sieć
+
+W przypadku gdy przydzielone zadania zostana wykonane w czasie krotszym niz 30h,
+badz wystapi nierownomierny podzial pracy przewidujemy dodatkowe funkcjonalnosci:
+-AI botow
+-rozne tryby gry ( ctf,deathmatch etc)
+-implementacja dodatkowych rodzajow broni
+
+

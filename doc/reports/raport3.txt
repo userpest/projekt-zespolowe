@@ -1,0 +1,10 @@
+Jakub Kuras:
+-omowienie wspolpracy miedzy komponentami
+0h
+Michal Antonczak:
+-bugfixy zwiazane z bronia
+-zapoznawanie sie z weakref i dojscie do wniosku ze,
+nie znajde dla niego zastosowania w projekcie
+-dodanie mozliwosci zapisu/odczytu stanu gracza( na potrzeby komunikacji sieciowej)
+-omowienie wspolpracy miedzy komponentami
+2h

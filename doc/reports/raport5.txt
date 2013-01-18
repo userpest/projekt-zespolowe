@@ -1,0 +1,9 @@
+Micha³ Antoñczak
+0h
+
+Jakub Kuraœ
+
+-debugowanie servera i klienta
+-scalanie engine'u i kodu sieciowego
+
+5h
