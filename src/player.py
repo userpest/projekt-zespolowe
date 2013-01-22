@@ -47,9 +47,12 @@ class Player(PhysicalObject):
 		self.weapons[1] = TestWeapon(self)
 		self.weapons[2] = Bazooka(self)
 		self.weapon = self.weapons[2]
-		self.weapon.visible = False
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 
+		for i in self.weapons:
+			i.visible = False
+
+		self.weapon.visible = True
 		self.respawn=False
 
 	def respawnPlayer(self):
@@ -84,12 +87,15 @@ class Player(PhysicalObject):
 	def setWeapon(self,num):
 		angle = self.weapon.angle
 		self.weaponnum = num
+		fire = self.weapon.fire
+		self.weapon.fire = False
 		self.weapon.visible=False
 		self.unattach(self.weapon)
 		self.weapon = self.weapons[num]
 		self.weapon.visible=True
 		self.weapon.setAngle(angle)
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
+		self.weapon.fire = fire
 
 	def handleTerrainImpact(self):
 		self.ground = True

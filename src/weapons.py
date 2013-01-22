@@ -112,7 +112,7 @@ class Weapon(AttachableObject):
 		self.ammo_count = self.magazine_size
 		
 	def emit(self):
-		if self.fire and self.cooldown_timer==0 and self.ammo_count > 0 i:
+		if self.fire and self.cooldown_timer==0 and self.ammo_count > 0 :
 			to_emit = []
 
 			self.cooldown_timer = self.cooldown
@@ -185,9 +185,9 @@ class Bazooka(Weapon):
 	def __init__(self,owner,visible=False):
 		self.visible = visible
 		img_dir=os.path.join('img','weapons','bazooka')
-		img_left = os.path.join(img_dir,'bazooka_left.png')
-		img_right = os.path.join(img_dir, 'bazooka_right.png')
-		Weapon.__init__(self,owner,0,0,self.shot,3,25,12,img_left,img_right,cooldown=50,colorkey=Color("White"))
+		img_left = os.path.join(img_dir,'bazooka_left2.png')
+		img_right = os.path.join(img_dir, 'bazooka_right2.png')
+		Weapon.__init__(self,owner,0,0,self.shot,3,50,12,img_left,img_right,cooldown=50,colorkey=Color("White"))
 
 	def shot(self):
 		return BazookaRocket(self.owner,self.visible)
