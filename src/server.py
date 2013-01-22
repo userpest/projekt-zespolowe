@@ -39,6 +39,7 @@ class Server:
 	self.game.create(map_name)
         self.port=port
 	self.socket=CreateSocketTcp()
+	self.socket.settimeout(10)
         self.socket.bind(('127.0.0.1',self.port))
 	#
 	self.socket.listen(10)
@@ -56,15 +57,17 @@ class Server:
 		try:
 			print 'listen for new client'
 			sock,addr = self.socket.accept()
+			if sock == None:
+				continue
 			print 'new client', addr
 			user=User(sock)
 			self.players.add(user)
 			Thread(target=Server.running,args=(self,user)).start()
 		except Exception as ex:
    			print 'exception',ex
-			 
+	print 'stoped listening'
     def running(self, user):
-	print 'begin reading msgs from client'
+	print 'begin reading msgs from new client'
 	msg=""
 	size=0
 	begin=True
@@ -73,11 +76,18 @@ class Server:
             try:
                 r, _, _ = select.select([user.socket], [], [],timeout)
                 do_read = bool(r)
-            except error as ex:
+            except Exception as ex:
+		print 'stoped reciving messages from client'
                 return ex
             if do_read:
-                data=user.socket.recv(buffsize)
+		try:
+	                data=user.socket.recv(buffsize)
+		except Exception as ex:
+			print 'exception during recv', ex
+			continue
 		if begin:
+			if len(data) == 0:
+				continue
 			splited = data.split(' ',1)	
 			size = int(splited[0])
 			size = size - len(splited[1])
@@ -91,16 +101,13 @@ class Server:
 			msg = msg + data
 		if begin:
 		        self.onMessage(msg,user)
+	print 'stoped reciving messages from client'
     def a(self):
         self.lock.acquire(True)
     def r(self):
         self.lock.release()
 
     def onMessage(self,data,user):
-	if user.up:
-		print data,user.id_
-	else:
-		print data
 	temp=json.loads(data)
         if len(temp)==0:
             return
@@ -125,11 +132,11 @@ class Server:
 	    self.w84join_response = self.w84join_response - 1
         else:
             return
-    def executeFrap(self):
+    def executeFrap(self,ecb):
 	if self.w84join_response > 0: #should be counter (connection timeout)
 		return False
 	else:
-		self.sendPackage()
+		self.sendPackage(ecb)
 		return True
     def createPack(self,temp,user):
 	self.lock_messages.acquire(True)
@@ -157,24 +164,29 @@ class Server:
         u = self.players.pop(user)
 	if u.up:
 		self.game.remove_player(user.player)
+		try:
+			u.socket.close()
+		except:
+			pass
 		id_ = u.id_
 	        msg=json.dumps(['E',id_])
         	for pl in self.players.get_list():
 	            self.send(pl,msg)
+		print 'player', id_, 'quit game'
     def send_to_all(self,temp,user):            
         for pl in self.players.get_list():
             self.send(pl,temp)
             if pl.id_==temp[1]:                
                 pl.player.setMoves(temp[2])
-    def sendPackage(self):
+    def sendPackage(self,ecb):
 	self.lock_messages.acquire(True)
 	#if len(self.messages[1]) == 0:
 	#	self.lock_messages.release()
 	#	return
+	ecb.processEvents()
 	for pair in self.messages[1]:
 		for pl in self.players.get_list():
 			if pl.id_ == pair[0]:
-				print 'update', pl.id_, 'using:', pair[1]
 				pl.player.setMoves(pair[1])
 				break
 	msg = json.dumps(self.messages)
@@ -191,8 +203,8 @@ class Server:
         return players
                     
     def send(self,user,msg):
-	if len(msg)<1000:
-		print user.id_,msg
+	#if len(msg)<1000:
+		#print user.id_,msg
 	msg=str(len(msg))+" "+msg
 	chunks=self.chunks(msg,1024)
 	for chunk in chunks:
@@ -207,8 +219,9 @@ class Server:
 	        pl.socket.close()
 	    except Exception as ex:
 		print ex, 'during quit'
+	self.not_end = False
 	self.socket.close()
-	self.not_end=False
+	print 'listen socket closed'
 	self.game.end()
     def quit_(self):
         self.not_end=False
@@ -220,7 +233,7 @@ class Server:
 		splited.append(s[start:start+n])
 	return splited
 
-server=Server(16669,"map.png",800,600)
+server=Server(16667,"map.png",800,600)
 server.run()
 print("Running")
 time.sleep(60)

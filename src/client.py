@@ -7,7 +7,7 @@ import json
 import select
 
 class Client:
-	players=[]
+	players={}
 	game=None
 	addr=None
 	socket=None
@@ -25,8 +25,8 @@ class Client:
 	def run(self):
 		try:
 			self.socket.connect(self.addr)
-		except:
-			print "Error. Unable to connect to server"
+		except Exception as ex:
+			print "Error. Unable connect to server (", ex, ")"
 			return 1
         	Thread(target=Client.running,args=(self,)).start()
 		self.invite()
@@ -50,10 +50,15 @@ class Client:
 	            try:
 	                r, _, _ = select.select([self.socket], [], [],timeout)
 	                do_read = bool(r)
-	            except error as ex:
+	            except Exception as ex:
+			print 'stoped reciving messages'
 	                return ex
 	            if do_read:
-	                data=self.socket.recv(buffsize)
+			try:
+		                data=self.socket.recv(buffsize)
+			except Exception as ex:
+				print 'exception during recv', ex
+				continue
 	                if begin:
 				if data == '':
 					continue
@@ -69,12 +74,9 @@ class Client:
 	                                begin = True
 	                        msg = msg + data
 	                if begin:
-				if len(msg) < 1000:
-					print msg
 	                        self.msgRecived(msg)
 				#onMessage(msg)
-		if self.game != None:
-			self.game.end()	
+		print 'stoped reciving messages'
 	def msgRecived(self,data):
 		temp=json.loads(data)
 		if len(temp) == 0:
@@ -85,26 +87,31 @@ class Client:
 			self.game.load(temp[4])
 			self.game.set_player_owner(self.id_,self.ch)
 			self.player = self.game.getPlayer(self.id_)
+			# weapon bux fix?
+			camera.registerObjects(self.player.attached)
+			#
 			for id_n in temp[5]:
-				self.players.append(self.game.getPlayer(id_n))
+				self.players[id_n]=self.game.getPlayer(id_n)
 			self.send(json.dumps(['J']))	# send joined
 		elif temp[0] == 'Q':
 			print 'Exit'
 			self.not_end = False
+			self.socket.close()
 			self.game.end()
+			print 'Exit done'
 		else:
 			self.lock_messages.acquire(True)
 			self.messages.append(temp)
 			self.lock_messages.release()
-	def ExecuteMessages(self):
+	def ExecuteMessages(self,ecb):
 		if len(self.messages) == 0:
 			return False
 		self.lock_messages.acquire(True)
 		message = self.messages.pop(0)
 		to_return = self.onMessage(message)
 		if to_return:
+			ecb.processEvents()
 			move = self.player.getMoves()
-			print 'geting move', move
 			self.send_move(self.player.getMoves())
 		self.lock_messages.release()
 		return to_return
@@ -121,24 +128,30 @@ class Client:
 		"""
 		if temp[0]=='N':	
 			player=Player(temp[1],temp[2],temp[3],temp[4],temp[5],temp[6])
-			self.players.append(player)
+			self.players[temp[6]]=player
 			self.game.join_player(player)
 		elif temp[0]=='P':
 			for pair in temp[1]:
-				if pair[0] != self.id_:
-					for p in self.players:
-						if p.id_ == pair[0]:
-							p.setMoves(pair[1])
-							break
+				#if pair[0] != self.id_:
+				if True:
+					self.players[pair[0]].setMoves(pair[1])
+					#for p in self.players:
+					#	if p.id_ == pair[0]:
+					#		p.setMoves(pair[1])
+					#		break
 
 			return True
 		elif temp[0]=='E':
-			i=0
-			while i<len(self.players):
-				if self.players[i].obj_id==temp[1]:
-					player = self.players.pop(i)
-					self.game.remove_player(player)		
-					i=i+1
+			player = self.players[temp[1]]
+			del self.players[temp[1]]
+			self.game.remove_player(player)
+			#i=0
+			#
+			#while i<len(self.players):
+			#	if self.players[i].obj_id==temp[1]:
+			#		player = self.players.pop(i)
+			#		self.game.remove_player(player)		
+			#		i=i+1
 		elif temp[0]=='Q':
 			self.not_end = False
 			self.game.end()	
@@ -164,11 +177,12 @@ class Client:
 		self.send_invite(self.img,self.imgc)
 
 
-client = Client(('127.0.0.1',16669),"hero.png","hero.png","crosshair.png")
+client = Client(('127.0.0.1',16667),"hero.png","hero.png","crosshair.png")
 client.run()
 
 import time
 time.sleep(20)
+client.quit_()
 #client=Client(('127.0.0.1',16666))
 #client.run()
 #print("Running")

@@ -35,7 +35,7 @@ class Game:
 		self.engine = Board(self.game_map)
 		camera.registerMap(self.game_map)
 	def load(self,date_board):
-		self.end()
+		self.end(False)
 		if self.loaded:
 			camera.unregisterMap()
 			self.crosshair.close()
@@ -53,8 +53,8 @@ class Game:
 		self.not_end = True
 		self.running = True
 		while self.not_end:
-			if self.function(self.obj_self):
-				self.event_callback.processEvents()
+			if self.function(self.obj_self,self.event_callback):
+				#self.event_callback.processEvents()
 				if self.crosshair!=None:
 					self.crosshair.epoch()
 				self.engine.epoch()
@@ -63,20 +63,25 @@ class Game:
 					self.crosshair.show()
 				pygame.display.flip()
 				if self.enable_fraping: #mozna przerobic zeby client tez czekal kilka ms zeby nie bylo szybkiej petli while true
-					pygame.time.wait(1000)
+					pygame.time.wait(50)
 		self.running = False
 	def start(self,new_thread = True):
 		if new_thread:
 			Thread(target=Game.__running, args=(self,)).start()
 		else:
 			self.__running()
-	def end(self):
+	def end(self, quit_pygame = True):
 		#self.not_end=False
 		while self.running:
 			self.not_end = False
+		if quit_pygame:
+			pygame.quit()
+			print 'game exit'
 	def join_player(self,player):
 		self.engine.registerPlayer(player)
 	#run after reciving game
+	def remove_player(self,player):
+		self.engine.unregisterPlayer(player)
 	def set_player_owner(self,id_,ch_img):
 		self.player = self.engine.getObjectByID(id_)
 		self.crosshair = Crosshair(ch_img,self.player,self.event_callback)
