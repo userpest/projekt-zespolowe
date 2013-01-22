@@ -36,7 +36,7 @@ class Player(PhysicalObject):
 		self.xlimit = 5
 		self.ylimit = 10
 		self.ground = False
-		self.friction = 0.02
+		self.friction = 0.3
 		self.kills = 0 
 		self.deaths = 0 
 		self.weaponnum = 0

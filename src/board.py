@@ -245,17 +245,13 @@ class Board(object):
 						pixelx+=1
 						movex-=1
 
-					elif pixely-1 < 0 :
-						i.v.x =0 
-						movex =0 
-
 					elif mcm[pixelx+1][pixely-1] == 0 and movex>=2:
 						movex-=2
 						pixelx+=1
-						pixely+=1
+						pixely-=1
 					else:
-						i.forgottenx+=movex
 						movex=0
+						i.v.x=0
 
 				if movex < 0:
 
@@ -266,16 +262,14 @@ class Board(object):
 					elif mcm[pixelx-1][pixely] == 0:
 						pixelx-=1
 						movex+=1
-					elif pixely-1 < 0:
-						i.v.x =0 
-						movex=0 
+
 					elif mcm[pixelx-1][pixely-1] == 0 and movex<=-2:
 						movex+=2
 						pixelx-=1
-						pixely+=1
+						pixely-=1
 					else:
-						i.forgottenx+=movex
 						movex=0
+						i.v.x = 0
 
 				if movey > 0:
 					if pixely +1 >= self.game_map.rect.bottom:
@@ -285,8 +279,6 @@ class Board(object):
 						pixely+=1
 						movey-=1
 					else:
-						if movey < 2:
-							i.forgotteny+=movey
 						movey = 0 
 						i.v.y = 0
 						i.handleTerrainImpact()
@@ -299,8 +291,6 @@ class Board(object):
 						pixely-=1
 						movey+=1
 					else:
-						if movey > -2:
-							i.forgotteny+=movey
 
 						movey = 0 
 						i.v.y = 0 

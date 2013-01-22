@@ -44,7 +44,7 @@ class BazookaRocket(Projectile):
 		if not self.explosion:
 			self.explosion = True
 			self.movable = False
-			self.explosion_timer = 3
+			self.explosion_timer = 6
 			self.setCollisionMap(self.explosion_cm)
 			self.img = self.explosion_img
 
