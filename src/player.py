@@ -47,6 +47,7 @@ class Player(PhysicalObject):
 		self.weapons[1] = TestWeapon(self)
 		self.weapons[2] = Bazooka(self)
 		self.weapon = self.weapons[2]
+		self.weaponnum = 2
 		self.attach(self.weapon, self.rect.centerx, self.rect.centery)
 
 		for i in self.weapons:
