@@ -1,5 +1,16 @@
+Michal Antonczak:
+-bugfixy
+-nowa mapa
+-testy
+-bazooka
+-usuniecie tunnellingu w mapie
+
+4h
+Lacznie: 30h
+
 Jakub Kuras:
 -instalacja srodowiska uruchomieniowego dla gry
 -scalanie kodu sieciowego i gry
 
 5h
+Lacznie: 30h

@@ -9,6 +9,9 @@ class KeyboardController(object):
 		self.move_right_key = pygame.K_d
 		self.jump_key = pygame.K_w
 		self.jets_key = pygame.K_SPACE
+		self.weapon_1 = pygame.K_1
+		self.weapon_2 = pygame.K_2
+		self.reload_weapon = pygame.K_r
 		
 		event_callback.registerCallback(pygame.KEYUP, self.keyUp)
 		event_callback.registerCallback(pygame.KEYDOWN, self.keyDown)
@@ -24,6 +27,12 @@ class KeyboardController(object):
 			self.player.jump = True
 		if event.key == self.jets_key:
 			self.player.jets = True
+		if event.key == self.weapon_1:
+			self.player.setWeapon(1)
+		if event.key == self.weapon_2:
+			self.player.setWeapon(2)
+		if event.key == self.reload_weapon:
+			self.player.weapon.reload()
 
 	def keyUp(self,event):
 

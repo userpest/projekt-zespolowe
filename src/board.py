@@ -214,9 +214,6 @@ class Board(object):
 
 			i.handleForce()
 			i.v+=self.gravity
-			pixelx = i.rect.centerx
-			pixely = i.rect.bottom
-
 			mx=i.v.x+i.forgottenx
 			my=i.v.y+i.forgotteny
 
@@ -228,6 +225,10 @@ class Board(object):
 
 			mcm = self.game_map.collision_map
 			pixels_touched = 0
+
+			pixelx = i.rect.centerx
+			pixely = i.rect.bottom
+
 
 			while( movex != 0 or movey != 0 ):
 
@@ -255,7 +256,6 @@ class Board(object):
 					else:
 						i.forgottenx+=movex
 						movex=0
-						i.v.x=0 
 
 				if movex < 0:
 
@@ -270,13 +270,12 @@ class Board(object):
 						i.v.x =0 
 						movex=0 
 					elif mcm[pixelx-1][pixely-1] == 0 and movex<=-2:
-						movex-=2
+						movex+=2
 						pixelx-=1
 						pixely+=1
 					else:
 						i.forgottenx+=movex
 						movex=0
-						i.v.x = 0 
 
 				if movey > 0:
 					if pixely +1 >= self.game_map.rect.bottom:
